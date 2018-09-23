@@ -1,0 +1,203 @@
+#timeline .line {
+  fill: none;
+  stroke: #71C1B4;
+  stroke-width: 0.5px;
+}
+
+
+
+#timeline .area {
+  /*fill: #969696;*/
+  fill:#71C1B4; /*#EEF3EF;*/
+  /*opacity: 0.3;*/
+}
+
+#timeline .attention {
+  background: yellow;
+  margin: -4px;
+  padding: 4px;
+}
+
+.barChart .bar {
+  fill: steelblue;
+}
+.barChart .x.axis path {
+  display: none;
+}
+#gates .x.axis text {
+  text-anchor: end;
+}
+
+#gates svg {
+  overflow: visible;
+}
+#carTypes .x.axis text {
+  text-anchor: end;
+}
+
+#carTypes svg {
+  overflow: visible;
+}
+
+
+
+/*-----------------------------------------------Crime Type------------------------------------------------*/
+
+#gates .svg{
+    display: block;
+    margin: 0 auto;
+}
+
+#gates .axis .domain {
+}
+
+#gates  .axis--x text {
+    fill: #999;
+}
+/*
+.axis--x line {
+    stroke: #aaa;
+}*/
+
+#gates  .axis--activity .tick line {
+    display: none;
+}
+
+#gates .axis--activity text {
+    font-size: 12px;
+    fill: #222;
+}
+
+#gates .axis--activity .tick:nth-child(odd) text {
+    fill: #222;
+}
+
+#gates .line {
+    fill: none;
+    stroke: #A04975;
+    stroke-width:1;
+     stroke-linejoin: "round";
+}
+
+#gates .line2 {
+    
+    stroke: #000;
+    stroke-width:1;
+    stroke-linejoin: "round";
+    stroke-dasharray:10,3;
+}
+
+#bumpChart .line3 {
+    fill: #27121c;
+    fill-opacity: 0.8;
+    stroke: #000;
+    stroke-width:1.5;
+    stroke-linejoin: "round";
+    stroke-dasharray:10,3;
+}
+
+
+.line3 {
+    fill: #27121c;
+    fill-opacity: 0.8;
+    stroke: #000;
+    stroke-width:1.5;
+    stroke-linejoin: "round";
+    stroke-dasharray:10,3;
+}
+#gates .area {
+    fill: #A04975;
+    opacity:0.6;
+}
+
+#gates .activity:nth-child(odd) .area {
+    fill: #A04975;
+}
+
+
+/*-----------------------------------------------Census blocks------------------------------------------------*/
+
+#Census .svg{
+    display: block;
+    margin: 0 auto;
+}
+
+#Census .axis .domain {
+}
+
+#Census  .axis--x text {
+    fill: #999;
+}
+/*
+.axis--x line {
+    stroke: #aaa;
+}*/
+
+#Census  .axis--activity .tick line {
+    display: none;
+}
+
+#Census .axis--activity text {
+    font-size: 12px;
+    fill: #222;
+}
+
+#Census .axis--activity .tick:nth-child(odd) text {
+    fill: #222;
+}
+
+#Census .line {
+    fill: none;
+    stroke: #8cab44;
+    stroke-width:1;
+    stroke-linejoin: "round";
+}
+
+#Census .line2 {
+    fill: none;
+    stroke: #000;
+    stroke-width:0.5;
+    stroke-linejoin: "round";
+    stroke-dasharray:10,3;
+}
+
+#Census .area {
+    fill: #8cab44;
+    opacity:0.6;
+
+}
+
+#Census .activity:nth-child(odd) .area {
+    fill: #8cab44;
+    opacity:0.6;
+}
+
+
+#bumpChart .line2 {
+    fill:#7D7076;
+    stroke: #000;
+    stroke-width:1;
+    stroke-linejoin: "round";
+    stroke-dasharray:10,3;
+}
+
+.patternLine{
+    stroke:#8e8e8e;
+    stroke-width:3;
+    stroke-linecap: round;
+    stroke-dasharray: ("10,3");
+}
+/*
+.overlap{
+    stroke:#515151; 
+    fill:#141414;
+    stroke
+}*/
+
+/*----------------------------------------------------------------------*/
+.gauge {
+    background-position: center center;
+    margin-left: auto;
+    margin-right: auto;
+
+}

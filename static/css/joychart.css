@@ -1,0 +1,67 @@
+
+.axis .domain {
+    display: none;
+}
+
+.axis--x text {
+    fill: #999;
+}
+
+.axis--x line {
+    stroke: #aaa;
+}
+
+.axis--activity .tick line {
+    display: none;
+}
+
+.axis--activity text {
+    font-size: 12px;
+    fill: #777;
+}
+
+.axis--activity .tick:nth-child(odd) text {
+    fill: #222;
+}
+
+
+.areaType {
+    fill: steelblue;
+      stroke: #fff;
+}
+
+.areaTypeSelected {
+    fill: orange;
+      stroke: #fff;
+}
+
+
+.activity:nth-child(odd) .areaType {
+    fill: lightskyblue;
+}
+
+.areaSite {
+    fill: steelblue;
+      stroke: #fff;
+}
+
+.areaSiteSelected {
+    fill: orange;
+      stroke: #fff;
+}
+
+
+.activity:nth-child(odd) .areaSite {
+    fill: lightskyblue;
+}
+
+
+.baseline {
+      stroke: #ccc;
+      shape-rendering: crispEdges;
+    }
+    .baseline:last-of-type {
+	stroke: #ccc;
+      /*display: none;*/
+    }
+

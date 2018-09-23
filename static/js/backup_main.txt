@@ -1,0 +1,536 @@
+var csData;
+var GRAPH={};
+    GRAPH.ColorPaletterName="interpolateYlOrBr";
+    GRAPH.dateFmt=d3.timeParse("%d-%m-%Y %H:%M:%S");
+    GRAPH.MaxCrimes=2;
+    GRAPH.codSetorList=[];
+    GRAPH.SiteSelected="";
+
+var svgMap;
+
+var svgColor;
+svgColor = d3.select("#color").append("svg")
+
+GRAPH.target = document.getElementById('loadingdiv');
+/*-----------------------SPIN-------------------------------*/
+var opts = {
+  lines   : 9,  // The number of lines to draw
+  length  : 5,  // The length of each line
+  width   : 3,  // The line thickness
+  radius  : 6,  // The radius of the inner circle
+  corners : 0.4,// Corner roundness (0..1)
+  rotate  : 0,  // The rotation offset
+  direction: 1, // 1: clockwise, -1: counterclockwise
+  color   : '#fff', // #rgb or #rrggbb or array of colors
+  speed   : 0.9, // Rounds per second
+  trail   : 73,  // Afterglow percentage
+  shadow  : false,// Whether to render a shadow
+  hwaccel : false,// Whether to use hardware acceleration
+  className: 'spinner', // The CSS class to assign to the spinner
+  zIndex  : 2e9,  // The z-index (defaults to 2000000000)
+  top     : '50%',// Top position relative to parent
+  left    : '50%' // Left position relative to parent
+};
+var spinner = new Spinner(opts);
+
+/*---------------------- MAP ------------------------------*/
+var MAP={};
+var OpenMapSurfer_Roads = L.tileLayer('https://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    attribution: 'Imagery from <a href="http://giscience.uni-hd.de/">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
+
+/*Outdoors*/
+var Thunderforest_Outdoors = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey={apikey}', {
+  attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  apikey: '<your apikey>',
+  maxZoom: 22
+});
+
+var Hydda_Full = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
+
+var CartoDB_Positron = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+    subdomains: 'abcd',
+    maxZoom: 19,
+    minZoom:3
+});
+
+MAP.baseLayers = {"CartoDB_Positron":CartoDB_Positron,
+                  "Hydda_Full": Hydda_Full,
+                  "Thunder":Thunderforest_Outdoors,
+                  "Open_Roads":OpenMapSurfer_Roads}
+
+const map = new L.Map('map', {
+    layers: [CartoDB_Positron],//[Hydda_Full],//[CartoDB_Positron],
+    center: new L.LatLng(-23.548682,-46.634731), //centro do Sao Paulo
+    zoom: 12,
+});
+
+
+const drawnItems = new L.FeatureGroup();
+map.addLayer(drawnItems);
+
+const drawControl = new L.Control.Draw({
+  position: 'topleft',
+  draw: { 
+      polyline: {metric: false},
+      marker: true,
+      circle: false,
+      rectangle:false,
+      polygon:false,
+      resetview:false,
+      editable: true,
+  },
+  edit: {
+      featureGroup: drawnItems,
+      remove: true,
+      buffer: {replacePolylines: false,separateBuffer: false}
+  },
+});
+
+
+map.addControl(drawControl);
+L.control.groupedLayers(MAP.baseLayers, MAP.groupedOverlays,drawControl).addTo(map);
+
+map.on('draw:created', (e) => {
+
+     const {layerType, layer } = e;
+     drawnItems.addLayer(layer);
+      var type = e.layerType;
+     if(type=='marker'){
+        marker=e;
+        QueryWithMarker(e.layer._latlng.lat,e.layer._latlng.lng);
+        drawnItems.removeLayer(e.layer);
+        map.removeLayer(e.layer);
+     }
+});
+
+var marker;
+map.on('draw:drawstart',(e)=>{
+   var type = e.layerType;
+   deleteElementsOfMap();
+});
+
+map.on('draw:bufferstart', (e) => { //modify the style of map layers
+    for(i in map._layers) {
+        if(map._layers[i]._path != undefined) {
+            d3.select(map.getPanes().overlayPane).selectAll("#mapdiv").remove();
+            map._layers[i].setStyle({opacity:0.5,fillOpacity:0.2});
+        }
+    }
+});
+
+map.on('draw:buffered', (e) => {
+    spinner.spin(GRAPH.target);
+    GRAPH.codSetorList   = [];
+    var lats             = [],
+        longs            = [],
+        points           = [];
+    poly2                = (Object.values(Object.values(e.layers)[0])[1])._latlngs;
+    poly2.forEach(function(d){
+                  points.push({x:parseFloat(d.lat),y:parseFloat(d.lng)});
+                  });
+    //Simple=simplify(points,0.0001); //reduce number of poinys
+    for (var i = 0; i < points.length; i++) {
+        //lats.push(Simple[i].x);longs.push(Simple[i].y);
+        lats.push(points[i].x); longs.push(points[i].y);
+    }
+
+    $.ajax({
+        data:{'lats':JSON.stringify(lats),'longs':JSON.stringify(longs)},
+        url : '/setor_selected/',
+        type: 'get',
+        dataType : 'json',
+        success : function(json) {
+            spinner.stop();
+            SetoresList = JSON.parse(json);
+            clearAll();
+            SetoresList['features'].forEach(function(d){  
+                GRAPH.codSetorList.push(d.properties['codsetor']);
+                d.properties.numcrimens=0.5; });
+            drawLeafletMap(SetoresList);
+            clearMap();
+        }
+    });
+
+});
+
+
+function drawLeafletMap(geoShape){
+ 
+   svgMap = d3.select(map.getPanes()
+            .overlayPane)
+            .append("svg")
+            .attr("id","mapdiv");
+
+   g      = svgMap.append("g")
+            .attr("class", "leaflet-zoom-hide");
+
+   var colorScale = d3.scaleSequential(d3[GRAPH.ColorPaletterName])
+                    .domain([0, GRAPH.MaxCrimes]);
+
+    //  create a d3.geo.path to convert GeoJSON to SVG
+    var transform   = d3.geoTransform({point: projectPoint}),
+            path    = d3.geoPath().projection(transform);
+ 
+    // create path elements for each of the features
+    d3_features = g.selectAll("path")
+                  .data(geoShape.features)
+                  .enter().append("path");
+
+    map.on("viewreset", reset);
+    reset();
+    // fit the SVG element to leaflet's map layer
+    function reset() {        
+        bounds          = path.bounds(geoShape);
+        var topLeft     = bounds[0],
+        bottomRight     = bounds[1];
+
+        svgMap.attr("width", bottomRight[0] - topLeft[0])
+              .attr("height", bottomRight[1] - topLeft[1])
+              .style("left", topLeft[0] + "px")
+              .style("top", topLeft[1] + "px");
+
+        g.attr("transform", "translate(" + -topLeft[0] + "," 
+                                          + -topLeft[1] + ")");
+        // initialize the path data 
+        d3_features.attr("d", path)
+                   .style("fill-opacity", 0.8)
+                   .attr('fill',function(d,i){
+                        //style when is selected
+                        if(d.properties.codsetor==GRAPH.SectorSeleccionado || d.properties.codsetor==GRAPH.ClickadosSetores){
+                            svgMap.append('defs')
+                                  .append('pattern')
+                                    .attr('id', 'diagonalHatch_'+i)
+                                    .attr('patternUnits', 'userSpaceOnUse')
+                                    .attr('width', 4)
+                                    .attr('height', 4)
+                                  .append('path')
+                                    .attr('d', 'M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2')
+                                    .attr('stroke', function(){return colorScale(d.properties.numcrimens); })
+                                    .attr('stroke-width', 2)
+                          return 'url(#diagonalHatch_'+i+')';
+                        }else{
+                          if(GRAPH.MaxCrimes==2){ return "#97A8BE";}
+                          return colorScale(d.properties.numcrimens);
+                        }
+          }) //aqui adicionar los colores
+          .attr('stroke','#636363')
+          .attr('stroke-width',1.5)
+          .attr("stroke-linecap", "round")
+          .on('click',GeoMouseClick);
+
+    } 
+    // Use Leaflet to implement a D3 geometric transformation.
+    function projectPoint(x, y) {
+      var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+      this.stream.point(point.x, point.y);
+    }
+}
+
+//click in each site
+function GeoMouseClick(d){
+  console.log("d");
+   /*if(csData!=null){
+        if(d.properties.codsetor!=GRAPH.ClickadosSetores){
+            ActionToCensusBlock(d.properties.codsetor); 
+        }else{
+            UnselectedActionToCensusBlock();
+        }
+    }*/
+}
+
+
+//get polygon with marker
+function QueryWithMarker(lat,lng){
+    $.ajax({
+        data:{'lat':lat,'lng':lng},
+        url : '/QueryWith_Marker/',
+        type: 'get',
+        dataType : 'json',
+        success : function(json) {
+          var myjson      = JSON.parse(json);
+          points          =[];
+          (myjson.features[0].geometry.coordinates[0][0]).forEach(function(d,i){
+                                                                      points.push([d[1],d[0]]);
+                                                                  });                
+          var firstpolyline = new L.polyline(points).addTo(map);
+          firstpolyline.addTo(drawnItems);
+        }
+    });
+}
+
+
+function HotspotDetection(){
+}
+
+function deleteElementsOfMap() {
+    for(i in map._layers) {
+        if(map._layers[i]._path != undefined ) {
+            try {
+                map.removeLayer(map._layers[i]);
+            }
+            catch(e) {
+                console.log("problem with " + e + map._layers[i]);
+            }
+        }
+    }
+    if(marker!=undefined){map.removeLayer(marker);}
+}
+
+function clearAll(){
+}
+
+function clearMap() {
+    for(i in map._layers) {
+        if(map._layers[i]._path != undefined) {
+                 map._layers[i].setStyle({opacity:0,fillOpacity:0});
+        }
+    }
+}
+
+function remakeGraph(){
+    GRAPH.MaxCrimes=-1000;
+    csData.Codes.all().forEach(function(d){
+        GRAPH.MaxCrimes=Math.max(GRAPH.MaxCrimes,d.value);
+        SetoresList.features.forEach(function(g){
+            if(g.properties.codsetor==d.key){g.properties.numcrimens=d.value;}
+        });
+    });
+
+    svgMap.selectAll("*").remove();
+    drawLeafletMap(SetoresList);
+    DrawColorPalette();
+}
+
+function DrawColorPalette(){
+    svgColor.selectAll("*").remove();
+    var colorScheme   = GRAPH.ColorPaletterName//"interpolateYlOrBr";
+    var width         = 200;
+    var widthLegend   = 20;
+    var heightPalette = 190;
+
+    var colorMapLegend = d3.scaleSequential()
+            .domain([0,width])
+            .interpolator(d3[colorScheme]);
+
+    var y = d3.scaleLinear()
+        .range([heightPalette, 0])
+        .domain([0, GRAPH.MaxCrimes]);
+
+    var numTicks;
+    if (width >= 100) {
+      numTicks = 10;
+    } else if (width>=50 && width<100) {
+      numTicks = 5;
+    } else {
+      numTicks = 3;
+    };
+    var yAxis = d3.axisRight()
+      .ticks(numTicks)
+      .scale(y);
+    svgColor.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate("+widthLegend/2+"," + 5  + ")")
+        .call(yAxis)            
+
+    svgColor.selectAll(".bars")
+        .append("g")
+        .data(d3.range(heightPalette), function(d) { return d; })                    
+        .enter().append("rect")
+            .attr("class", "bars")
+            .attr("x", -1)
+            .attr("y", function(d, i) { return heightPalette-i+4; })
+            .attr("height", 1)
+            .attr("width", widthLegend/2)
+            .style("fill", function(d, i ) { return colorMapLegend(d); })
+}
+
+
+////////////////////////////////////////TIME SERIES CHART
+
+function timeSeriesChart(options) {
+  var margin    = options.margin;
+  var width     = parseInt(options["width"]);
+    var height    = parseInt(options["height"]);
+    var data    = [];
+    var overlapData = [];
+    var updateData;
+    var updateOverlapData;
+
+
+    var xValue = function(d) { return d[0]; },
+    yValue = function(d) { return d[1]; },
+    zValue = function(d) { return d[2]; };
+    //var mainSvg=panel;
+    
+    Global_xScale = d3.scaleTime(),
+    yScale = d3.scaleLinear(),
+
+    area = d3.area().x(X).y1(Y),//.curve(d3.curveBasis),
+    line = d3.line().x(X).y(Y),//.curve(d3.curveBasis),
+
+    areaOverlap = d3.area().x(X).y1(Y),
+
+    onBrushed = function () {},
+    onBrush_end=function(){},
+    ActualizarDatos=function(){};
+
+
+  function chart(selection) {
+    selection.each(function() {
+      data = data.map(function(d, i) {
+            return [xValue.call(data, d, i), yValue.call(data, d, i),d.value];//,MisDatos.overlapData[i].newvalue,MisDatos.overlapData[i].value];
+          });
+
+      // Update the x-scale.
+        xScale
+            .domain(d3.extent(data, function(d) { return d[0]; }))
+            .range([0, width - margin.left - margin.right]);
+
+        // Update the y-scale.
+        var maximo= d3.max(data, function(d) { return d[1]; });
+        yScale
+            .domain([0, maximo])
+            .range([height - margin.top - margin.bottom, 0]);
+
+        // Select the svg element, if it exists.
+
+
+          var svg = d3.select(this);//.selectAll("svg").data(data);
+
+          // Otherwise, create the skeletal chart.
+          var svgEnter = svg.append("svg")
+                   .attr('height', height)
+                       .attr('width', width)
+
+               var gEnter = svgEnter.append("g")
+                      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+         // var gEnter = svgEnter.append("g");
+
+          //gEnter.append("g").attr("class", "x axis");
+                  
+          // Update the area path.
+           gEnter.append("path").attr("class", "area")
+               .datum(data)
+                 .attr("d", area.y0(yScale.range()[0]));
+
+          // Update the line path.
+           gEnter.append("path").attr("class", "line")
+               .datum(data)
+                 .attr("d", line);
+
+          
+           gEnter.append("g").attr("class", "x axis")
+              .attr("transform", "translate(0," + yScale.range()[0] + ")")
+              .call(d3.axisBottom(xScale).tickSize(6, 0));
+
+            gEnter.append("g").attr("class", "y axis")
+             .call(d3.axisLeft(yScale).ticks(5))
+            .append("text")
+              .attr("transform", "rotate(-90)")
+              .attr("y", 6)
+              .attr("dy", "0.71em")
+              .attr("text-anchor", "end")
+              .text("Frequency");
+
+            gEnter.append("g").attr("class", "brush")
+            .call(d3.brushX()
+            .extent([
+              [0,0],
+              [xScale.range()[1], yScale.range()[0]]
+            ])
+            .on("brush", brushed)
+            );
+
+
+        updateOverlapData=function(){
+
+          overlapData = overlapData.map(function(d, i) {
+            return [xValue.call(overlapData, d, i), yValue.call(overlapData, d, i),d.value];
+            });
+
+          gEnter.append("path").attr("class", "area")
+               .datum(overlapData)
+               .attr("fill","red")
+                 .attr("d", areaOverlap.y0(yScale.range()[0]));
+
+        }
+
+    });
+  }
+
+  function brushed() {
+    if (!d3.event.sourceEvent) return; // Only transition after input.
+    if (!d3.event.selection) return; // Ignore empty selections.
+    var selection = d3.event.selection.map(xScale.invert);
+
+    onBrushed(selection);
+  }
+
+  // The x-accessor for the path generator; xScale ∘ xValue.
+  function X(d) {
+    return xScale(d[0]);
+  }
+
+  // The y-accessor for the path generator; yScale ∘ yValue.
+  function Y(d) {
+    return yScale(d[1]);
+  }
+
+  chart.margin = function(_) {
+    if (!arguments.length) return margin;
+    margin = _;
+    return chart;
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  };
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  };
+
+  chart.x = function(_) {
+    if (!arguments.length) return xValue;
+    xValue = _;
+    return chart;
+  };
+
+  chart.y = function(_) {
+    if (!arguments.length) return yValue;
+    yValue = _;
+    return chart;
+  };
+
+  chart.onBrushed = function(_) {
+    if (!arguments.length) return onBrushed;
+    onBrushed = _;
+    return chart;
+  };
+
+  chart.data = function(value) {
+     if (!arguments.length) return data;
+     data = value;
+     if (typeof updateData === 'function') updateData();
+     return chart;
+  };
+
+  chart.overlapData = function(value) {
+        if (!arguments.length) return overlapData;
+        overlapData = value;
+        if (typeof updateOverlapData === 'function') updateOverlapData();
+    };
+
+  return chart;
+}
