@@ -143,7 +143,7 @@ var CumulativeTemporalView={};
 //CumulativeTemporalView.Graph      = d3.select("#cumulativeBarChart").append("svg").attr("width",myDiv_CumulativeTemporalView.clientWidth);
 
 CumulativeTemporalView.margin     = {top: 10, right: 10, bottom: 30, left: 35};
-CumulativeTemporalView.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.40//myDiv_CumulativeTemporalView.clientWidth;
+CumulativeTemporalView.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.50//myDiv_CumulativeTemporalView.clientWidth;
 CumulativeTemporalView.height     = myDiv_TotalCumulativeTemporalView.clientHeight;//myDiv_CumulativeTemporalView.clientHeight;
 
 CumulativeTemporalView.xScale     = d3.scaleBand().padding(0.2);
@@ -281,7 +281,7 @@ var CumulativeTemporalView_Day={};
 
 CumulativeTemporalView_Day.margin     = {top: 10, right: 10, bottom: 30, left: 35};
 
-CumulativeTemporalView_Day.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.4;//myDiv_CumulativeTemporalView_Day.clientWidth;
+CumulativeTemporalView_Day.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.3;//myDiv_CumulativeTemporalView_Day.clientWidth;
 CumulativeTemporalView_Day.height     = myDiv_TotalCumulativeTemporalView.clientHeight;//myDiv_CumulativeTemporalView_Day.clientHeight;
 //myDiv_TotalCumulativeTemporalView.clientWidth*0.40
 //myDiv_TotalCumulativeTemporalView.clientHeight;//m
@@ -292,7 +292,7 @@ CumulativeTemporalView_Day.yScale = d3.scaleLinear();
 CumulativeTemporalView_Day.svg = GlobalCumulativeTemporalView.Graph.append('g')
                              .attr('class', 'barchart')
                              //.attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.4+CumulativeTemporalView_Day.margin.left + "," + CumulativeTemporalView_Day.margin.top + ")");
-                             .attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.4+CumulativeTemporalView_Day.margin.left + "," + CumulativeTemporalView_Day.margin.top + ")");
+                             .attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.5+CumulativeTemporalView_Day.margin.left + "," + CumulativeTemporalView_Day.margin.top + ")");
 
 //CumulativeTemporalView_Day.svg.append("rect").attr("x",0).attr("y",0).attr("width",CumulativeTemporalView.width).attr("height",CumulativeTemporalView.height).attr("fill","green").attr("fill-opacity",0.5);
 CumulativeTemporalView_Day.svg.append("g").attr("class", "barGraph");
@@ -528,329 +528,6 @@ function updateCumulative_Period(data){
 /**************************************************************************************************************************/
 /**************************************************************************************************************************/
 /**************************************************************************************************************************/
-/*------------------------------------------------------------------------------------*/
-/*                  Temporal Type View*/
-/*------------------------------------------------------------------------------------*/
-
-var TemporalTypeView={};
-var div_TemporalTypeView  = document.getElementById("temporalTypeView");
-
-TemporalTypeView.Graph    = d3.select('#temporalTypeView').append("svg")
-                            .attr("width",div_TemporalTypeView.clientWidth)
-                            .attr("height",600);
-
-TemporalTypeView.margin     = { top: 10, right: 50, bottom: 30, left: 250 };
-TemporalTypeView.width      = div_TemporalTypeView.clientWidth;
-TemporalTypeView.height     = 600;//div_TemporalTypeView.clientHeight;
-
-TemporalTypeView.xScale = d3.scaleTime();
-TemporalTypeView.yScale = d3.scaleLinear();
-
-//var activity = function(d) { return d.key; };
-TemporalTypeView.activityScale = d3.scaleBand();//.range([0, height]),
-var activityValueType = function(d) { return TemporalTypeView.activityScale(d.key); };
-//var activityAxis = d3.axisLeft(TemporalTypeView.activityScale);
-
-TemporalTypeView.overlap= 0.6;
-
-TemporalTypeView.svg = TemporalTypeView.Graph.append('g')
-                             .attr('class', 'tamporalTypeView')
-                             .attr("transform", "translate(" + TemporalTypeView.margin.left + "," + TemporalTypeView.margin.top + ")");
-               
-TemporalTypeView.svg.append("g").attr("class", "baseline");
-TemporalTypeView.svg.append("g").attr("class", "activities");
-TemporalTypeView.svg.append("g").attr("class", "x axis");
-TemporalTypeView.svg.append("g").attr("class", "axis axis--x");
-TemporalTypeView.svg.append("g").attr("class", "axis axis--activity");
-
-
-var areaType = d3.area()
-    .x(function(d){return TemporalTypeView.xScale(d.date);})
-    .y1(function(d){return TemporalTypeView.yScale(d.value);})
-  .curve(d3.curveBasis);
-
-  
-function CleanTemporalTypeView(){
-  TemporalTypeView.svg.select(".baseline").selectAll("*").remove();
-  TemporalTypeView.svg.select(".activities").selectAll("*").remove();
-  TemporalTypeView.svg.select(".x.axis").selectAll("*").remove();
-  TemporalTypeView.svg.select(".axis.axis--x").selectAll("*").remove();
-  TemporalTypeView.svg.select(".axis.axis--activity").selectAll("*").remove();
-}
-var CreateTemporalTypeView=function CreateTemporalTypeView(group,area,data){
-   CleanTemporalTypeView();
-  data.sort(function(a, b) { return a.date - b.date; });
-  
-  var datanest = d3.nest()
-      .key(function(d) { return d.typeCrime;/*.toLowerCase();*/ })
-      .rollup(function(leaves){return {"values":leaves,"sum":d3.sum(leaves,function(d){return parseFloat(d.value);})}})
-      .entries(data);
-  
-  datanest.sort(function(a, b) { return b.value.sum-a.value.sum;});
-
-  TemporalTypeView.height=datanest.length*25;
-  
-  var innerWidth=TemporalTypeView.width-TemporalTypeView.margin.left - TemporalTypeView.margin.right;
-  var innerHeight=TemporalTypeView.height-TemporalTypeView.margin.top - TemporalTypeView.margin.bottom;
-  
-  TemporalTypeView.xScale.domain(d3.extent(data, function(d){return d.date;})).range([0, innerWidth]);
-  
-  TemporalTypeView.activityScale.domain(datanest.map(function(d) { return d.key; })).range([0, innerHeight]);
-  
-  var areaChartHeight = (1 + TemporalTypeView.overlap) * (innerHeight / TemporalTypeView.activityScale.domain().length);
-  
-  TemporalTypeView.yScale
-        .domain(d3.extent(data, function(d){return d.value}))
-        .range([areaChartHeight, 0]);
-  
-  area.y0(TemporalTypeView.yScale(0));
-  
-
-    TemporalTypeView.svg.select('.axis.axis--activity')
-        .call(d3.axisLeft(TemporalTypeView.activityScale))
-  
-  var ar=TemporalTypeView.svg.select('.baseline')
-              .append("g");
-              
-  ar.selectAll("baseline")
-        .data(datanest)
-      .enter().append("line")
-        .attr("class", "baseline")
-        .attr("x1", 0)
-        .attr("x2", innerWidth)
-        .attr("y1", function(d) { 
-      return (activityValueType(d)) + TemporalTypeView.activityScale.bandwidth(); })
-        .attr("y2", function(d) { 
-      return (activityValueType(d)) + TemporalTypeView.activityScale.bandwidth(); })
-    .style("stroke","black");
-    
-  
-  var gActivity = TemporalTypeView.svg.select('.activities')
-            .selectAll('.activity').data(datanest)
-        .enter().append('g')
-            .attr('class', function(d) { return 'activity activity--' + d.key; })
-            .attr('transform', function(d) {
-                var ty = activityValueType(d) - TemporalTypeView.activityScale.bandwidth() + 5;
-                return 'translate(0,' + ty + ')';
-            });
-  
-  gActivity.append('path')
-    .attr('class', function(d){ if(d.key.toLowerCase()==GRAPH.selectedCrimeType.toLowerCase()){return 'areaTypeSelected';}else{return 'areaType'}})
-    .datum(function(d) {return d.value.values})
-    .attr('d', area)
-    .on("click",eventoClickCrimeType);
-
-    gActivity.append('text')
-            .attr('class', function(d) { return 'activity activity--' + d.key; })
-            .attr("y",function(){return TemporalTypeView.yScale(0);})
-            .attr("font-size", "12px")
-              .attr("fill", "#777")
-            .attr("x",function(){return innerWidth;})
-            .text(function(d){return Math.floor(d.value.sum);});
-  
-  TemporalTypeView.svg.select(".axis.x")
-    .attr("transform", "translate(0, " + (innerHeight - 2) + ")")
-    .call(d3.axisBottom(TemporalTypeView.xScale).tickSize(6, 0))
-     .selectAll("text")  
-        .style("text-anchor", "end")
-        .attr("dx", "-.8em")
-        .attr("dy", ".15em")
-        .attr("transform", function(d) {
-          return "rotate(-65)" 
-          }); 
-}
-
-function eventoClickCrimeType(d){
-  if(GRAPH.selectedCrimeType.toLowerCase()==d[0].typeCrime.toLowerCase()){
-    GRAPH.selectedCrimeType="";
-    d3.select(this).attr("class","areaType");
-    RankingTypeView.svg.selectAll("path").attr("class","bumpchart");
-    //updateOverlapAreaRemove();
-    //updateCumulativeViewRemove();
-    UnselectedActionToCrimeType();
-    
-  }else{
-    TemporalTypeView.svg.select(".activities").selectAll("path").attr("class","areaType");
-     RankingTypeView.svg.selectAll("path").attr("class","bumpchart");
-
-
-    var temp=d[0].typeCrime.split(' ').join('');
-    d3.select("#bumpchart_"+temp.split('.').join('')).attr("class","bumpchartSelected");
-    GRAPH.selectedCrimeType=d[0].typeCrime;
-    d3.select(this).attr("class","areaTypeSelected");
-    ActionToCrimeType(d[0].typeCrime);
-
-    //updateOverlapAreaRemove();
-    //updateOverlap();
-
-    //updateCumulativeViewRemove();
-    //updateCumulative();
-  }
-}
-
-
-
-//joyChartdata.forEach(function(d){d.date=new Date(d.date);})
-//CreateTemporalTypeView(TemporalTypeView.svg,areaType,joyChartdata);
-
-
-/*------------------------------------------------------------------------------------*/
-/*                  Temporal Site View*/
-/*------------------------------------------------------------------------------------*/
-
-var TemporalSiteView={};
-var div_TemporalSiteView  = document.getElementById("temporalSiteView");
-
-TemporalSiteView.Graph    = d3.select('#temporalSiteView').append("svg")
-                            .attr("width",div_TemporalSiteView.clientWidth)
-                            .attr("height",600);
-
-TemporalSiteView.margin     = { top: 10, right: 50, bottom: 30, left: 120 };
-TemporalSiteView.width      = div_TemporalSiteView.clientWidth;
-TemporalSiteView.height     = 600;//div_TemporalSiteView.clientHeight;
-
-TemporalSiteView.xScale = d3.scaleTime();
-TemporalSiteView.yScale = d3.scaleLinear();
-
-//var activity = function(d) { return d.key; };
-TemporalSiteView.activityScale = d3.scaleBand();//.range([0, height]),
-var activityValueSite = function(d) { return TemporalSiteView.activityScale(d.key); };
-//var activityAxis = d3.axisLeft(TemporalSiteView.activityScale);
-
-TemporalSiteView.overlap= 0.6;
-
-TemporalSiteView.svg = TemporalSiteView.Graph.append('g')
-                             .attr('class', 'tamporalTypeView')
-                             .attr("transform", "translate(" + TemporalSiteView.margin.left + "," + TemporalSiteView.margin.top + ")");
-               
-TemporalSiteView.svg.append("g").attr("class", "baseline");
-TemporalSiteView.svg.append("g").attr("class", "activities");
-TemporalSiteView.svg.append("g").attr("class", "x axis");
-TemporalSiteView.svg.append("g").attr("class", "axis axis--x");
-TemporalSiteView.svg.append("g").attr("class", "axis axis--activity");
-
-var areaSite = d3.area()
-    .x(function(d){return TemporalSiteView.xScale(d.date);})
-    .y1(function(d){return TemporalSiteView.yScale(d.value);})
-  .curve(d3.curveBasis);
-  
-function clean_TemporalSiteView(){
-    TemporalSiteView.svg.select(".baseline").selectAll("*").remove();
-    TemporalSiteView.svg.select(".activities").selectAll("*").remove();
-    TemporalSiteView.svg.select(".x.axis").selectAll("*").remove();
-    TemporalSiteView.svg.select(".axis.axis--x").selectAll("*").remove();
-    TemporalSiteView.svg.select(".axis.axis--activity").selectAll("*").remove();
-}
-var CreateTemporalSiteView=function CreateTemporalSiteView(group,area,data){
-  clean_TemporalSiteView();
-  data.sort(function(a, b) { return a.date - b.date; });
-  
-  var datanest = d3.nest()
-      .key(function(d) { return d.code;/*.toLowerCase();*/ })
-      .rollup(function(leaves){return {"values":leaves,"sum":d3.sum(leaves,function(d){return parseFloat(d.value);})}})
-      .entries(data);
-  
-  datanest.sort(function(a, b) { return b.value.sum-a.value.sum;});
-  
-  TemporalSiteView.height=datanest.length*26;
-
-  var innerWidth=TemporalSiteView.width-TemporalSiteView.margin.left - TemporalSiteView.margin.right;
-  var innerHeight=TemporalSiteView.height-TemporalSiteView.margin.top - TemporalSiteView.margin.bottom;
-  
-  TemporalSiteView.xScale.domain(d3.extent(data, function(d){return d.date;})).range([0, innerWidth]);
-  
-  TemporalSiteView.activityScale.domain(datanest.map(function(d) { return d.key; })).range([0, innerHeight]);
-  
-  var areaChartHeight = (1 + TemporalSiteView.overlap) * (innerHeight / TemporalSiteView.activityScale.domain().length);
-  
-  TemporalSiteView.yScale
-        .domain(d3.extent(data, function(d){return d.value}))
-        .range([areaChartHeight, 0]);
-  
-  area.y0(TemporalSiteView.yScale(0));
-  
-
-    TemporalSiteView.svg.select('.axis.axis--activity')
-        .call(d3.axisLeft(TemporalSiteView.activityScale))
-  
-  var ar=TemporalSiteView.svg.select('.baseline')
-              .append("g");
-              
-  ar.selectAll("baseline")
-        .data(datanest)
-      .enter().append("line")
-        .attr("class", "baseline")
-        .attr("x1", 0)
-        .attr("x2", innerWidth)
-        .attr("y1", function(d) { 
-      return (activityValueSite(d)) + TemporalSiteView.activityScale.bandwidth(); })
-        .attr("y2", function(d) { 
-      return (activityValueSite(d)) + TemporalSiteView.activityScale.bandwidth(); })
-    .style("stroke","black");
-    
-  
-  var gActivity = TemporalSiteView.svg.select('.activities')
-            .selectAll('.activity').data(datanest)
-        .enter().append('g')
-            .attr('class', function(d) { return 'activity activity--' + d.key; })
-            .attr('transform', function(d) {
-                var ty = activityValueSite(d) - TemporalSiteView.activityScale.bandwidth() + 5;
-                return 'translate(0,' + ty + ')';
-            });
-  
-  gActivity.append('path')
-        .attr("id",function(d){
-            return "temporalSiteView_"+d.key;
-          })
-        .attr('class', function(d){ if(d.key.toLowerCase()==GRAPH.SelectedSite.toLowerCase()){return 'areaSiteSelected';}else{return 'areaSite'}})
-    .datum(function(d) {return d.value.values})
-        .attr('d', area)
-    .on("click",eventoClickSite);
-
-    gActivity.append('text')
-            .attr('class', function(d) { return 'activity activity--' + d.key; })
-            .attr("y",function(){return TemporalSiteView.yScale(0);})
-            .attr("font-size", "12px")
-              .attr("fill", "#777")
-            .attr("x",function(){return innerWidth;})
-            .text(function(d){return Math.floor(d.value.sum);});
-  
-  TemporalSiteView.svg.select(".axis.x")
-    .attr("transform", "translate(0, " + (innerHeight - 2) + ")")
-    .call(d3.axisBottom(TemporalSiteView.xScale).tickSize(6, 0))
-     .selectAll("text")  
-        .style("text-anchor", "end")
-        .attr("dx", "-.8em")
-        .attr("dy", ".15em")
-        .attr("transform", function(d) {
-          return "rotate(-65)" 
-          }); 
-}
-
-function eventoClickSite(d){
-  if(GRAPH.SelectedSite.toLowerCase()==d[0].code.toLowerCase()){
-    GRAPH.SelectedSite="";
-    d3.select(this).attr("class","areaSite");
-    
-    //updateOverlapAreaRemove();
-    //updateCumulativeViewRemove();
-    UnselectedActionToCensusBlock();
-
-  }else{
-    TemporalSiteView.svg.select(".activities").selectAll("path").attr("class","areaSite");
-    GRAPH.SelectedSite=d[0].code;
-    d3.select(this).attr("class","areaSiteSelected");
-    ActionToCensusBlock(d[0].code);
-    //updateOverlapAreaRemove();
-    //updateOverlap();
-
-    //updateCumulativeViewRemove();
-    //updateCumulative();
-  }
-}
-
-//CreateTemporalSiteView(TemporalTypeView.svg,areaType,joyChartdata);
-
 
 /*****************************************************************************/
 /*                          Ranking Type View */
@@ -877,8 +554,7 @@ RankingTypeView.yScale    = d3.scaleLinear();
 RankingTypeView.radioScale = d3.scaleLinear();
       
 var colorRanking = d3.scaleOrdinal()
-  .range(["#DB7F85", "#50AB84", "#4C6C86", "#C47DCB", "#B59248", "#DD6CA7", "#E15E5A", "#5DA5B3", "#725D82", "#54AF52", "#954D56", "#8C92E8", "#D8597D", "#AB9C27", "#D67D4B", "#D58323", "#BA89AD", "#357468", "#8F86C2", "#7D9E33", "#517C3F", "#9D5130", "#5E9ACF", "#776327", "#944F7E"]);
-    
+                  .range(["#DB7F85", "#50AB84", "#4C6C86", "#C47DCB", "#B59248", "#DD6CA7", "#E15E5A", "#5DA5B3", "#725D82", "#54AF52", "#954D56", "#8C92E8", "#D8597D", "#AB9C27", "#D67D4B", "#D58323", "#BA89AD", "#357468", "#8F86C2", "#7D9E33", "#517C3F", "#9D5130", "#5E9ACF", "#776327", "#944F7E"]);
 
 RankingTypeView.svg.append("g").attr("class","bumpchart");
 RankingTypeView.svg.append("g").attr("class","x axis");
@@ -892,6 +568,8 @@ function clean_RankingTypeView(){
   RankingTypeView.svg.select(".bumpchart").selectAll("*").remove();
   RankingTypeView.svg.select(".x.axis").selectAll("*").remove();
 }
+
+
 var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
   clean_RankingTypeView();
   data.sort(function(a, b) { return a.date - b.date; });
@@ -931,17 +609,6 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
         })
     .entries(data);
   
-  /* ------------------------ Complete Intermedio ----------------------------------*/
-  /*topnames.forEach(function(d){
-      intermedio.forEach(function(g){
-          if(arrayObjectIndexOf(g.values,d,"key")<0){
-            g.values.push({"key":d,"value":0});
-          }
-        });
-  });*/
-
-
-  /* ------------------------ Complete Intermedio ----------------------------------*/
 
 
   intermedio.forEach(function(d) {
@@ -960,7 +627,7 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
       var globalAlpha,strokeStyle,lineWidth ;
 
         globalAlpha = 0.85;
-        strokeStyle = colorRanking(name.key);
+        strokeStyle = GRAPH.CrimeTypeScale(name.key);//colorRanking(name.key);
         lineWidth = 2.5;
         
         
@@ -975,9 +642,9 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
       .attr("id",function(f){
           temp=name.key.split(' ').join('');
           return "bumpchart_"+temp.split('.').join('');})
-      .attr("fill", colorRanking(name.key))
+      .attr("fill", GRAPH.CrimeTypeScale(name.key))//colorRanking(name.key))
       .attr("class","bumpchart")
-      .attr("stroke", colorRanking(name.key))
+      .attr("stroke", GRAPH.CrimeTypeScale(name.key))//colorRanking(name.key))
       .attr("stroke-width", "1px")
       .attr("d", ribbon(points));
     
@@ -1014,8 +681,201 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
   .call(d3.axisBottom(RankingTypeView.xScale).tickSize(6, 0));
 }
 
+
+/**************************************************************************************/
+var colores_g = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
+var Months=["jan","feb","mar","apr","may","jun","jul","aug","sept","oct","nov","dec"];
+
+var RankingTypeViewSunBarChart          = {};
+var myDiv_RankingTypeViewSunBarChart    = document.getElementById("sunBarChart");
+RankingTypeViewSunBarChart.anglePadding = 0.05;
+
+RankingTypeViewSunBarChart.width  = myDiv_RankingTypeViewSunBarChart.clientWidth,
+RankingTypeViewSunBarChart.height = myDiv_RankingTypeViewSunBarChart.clientHeight,
+RankingTypeViewSunBarChart.number = 5;
+
+RankingTypeViewSunBarChart.individualDiv=(myDiv_RankingTypeViewSunBarChart.clientWidth/RankingTypeViewSunBarChart.number)-5;
+
+var arc = d3.arc();
+var p   = Math.PI*2;
+var projection = d3.geoMercator().scale(1);
+var path = d3.geoPath().projection(projection);
+
+RankingTypeViewSunBarChart.Radio        = 100;
+RankingTypeViewSunBarChart.innerRadius  = 50;
+RankingTypeViewSunBarChart.barHeight    = RankingTypeViewSunBarChart.Radio;
+RankingTypeViewSunBarChart.labelRadius  = RankingTypeViewSunBarChart.barHeight * 1.025;
+
+function CreateSunBarChartTypeView(misDatos){
+    misDatos.forEach(function(g){g.year=(g.date).getFullYear();});
+    var temp = d3.nest()
+       .key(function(r){return r.crimeType})
+       .entries(misDatos);
+
+    temp.sort(function(a,b){return b.values.length-a.values.length});
+    var num=RankingTypeViewSunBarChart.number;
+    var topnames = temp.slice(0,num).map(function(d,i) { if(i<num){ return d.key; }  });
+
+    misDatos=misDatos.filter(function(d) { return (topnames.indexOf(d.crimeType) > -1); });
+
+    data = d3.nest()
+         .key(function(f){return f.year;})
+          .key(function(d){return d.crimeType;})
+            .key(function(d){return d.labelMonth;})
+         .entries(misDatos);
+
+    var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.values.length;});})});
+
+    RankingTypeViewSunBarChart.Scale=d3.scaleLinear().domain([0, maximo]).range([RankingTypeViewSunBarChart.innerRadius,RankingTypeViewSunBarChart.Radio]);
+
+    var Second_data = d3.nest()
+             .key(function(f){return f.crimeType;})
+             .key(function(d){return d.year;})
+             .key(function(d){return d.labelMonth;}).entries(misDatos);
+             
+    Second_data.sort(function(a,b){return topnames.indexOf(b.key)-topnames.indexOf(a.key);})
+
+    var scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+    
+    projection.scale(scaleCenter.scale)
+      .center(scaleCenter.center)
+      .translate([RankingTypeViewSunBarChart.innerRadius , RankingTypeViewSunBarChart.innerRadius ]);
+
+    visualize(Second_data,SetoresList);
+}
+
+function visualize(data,states){
+  var visualizationWrapper = d3.select('#sunBarChart');
+  data.slice().reverse().forEach(function(d,i){
+      var wrapper = visualizationWrapper
+        .append('div')
+                    .style("width", RankingTypeViewSunBarChart.individualDiv + 'px')
+          .style("height", RankingTypeViewSunBarChart.height + 'px')
+          .attr('class',"block_crimetype");
+      createSunChart(wrapper,d,states,GRAPH.CrimeTypeScale(d.key));
+  });
+
+  function createSunChart(wrapper,da,states,color){
+          wrapper.append('p')
+                .text(da.key.toLowerCase())
+                .style("color",color)
+              .attr("fill-opacity",1)
+                .attr('class', 'legend');
+                
+
+            var svg = wrapper.append('svg')
+                .attr("width", RankingTypeViewSunBarChart.individualDiv)
+                .attr("height", RankingTypeViewSunBarChart.height);
+
+      var mapsvg=svg.append("g").attr("transform", "translate(" + (RankingTypeViewSunBarChart.individualDiv/2-RankingTypeViewSunBarChart.innerRadius) + "," + (RankingTypeViewSunBarChart.height/2-RankingTypeViewSunBarChart.innerRadius) + ")");
+
+       mapsvg.selectAll('path_map')
+                .data(states.features)
+                .enter()
+                .append('path')
+                .attr('opacity', "0.3")
+
+                .attr('fill',color)
+                .attr('stroke',color)
+                .attr('d', path);
+
+            var labels = svg.append("g")
+                  .attr("transform", "translate(" + RankingTypeViewSunBarChart.individualDiv/2 + "," + RankingTypeViewSunBarChart.height/2 + ")");
+
+            labels.append("def")
+            .append("path")
+            .attr("id", "label-path")
+            .attr("d", "m0 " + -RankingTypeViewSunBarChart.labelRadius + " a" + RankingTypeViewSunBarChart.labelRadius + " " + RankingTypeViewSunBarChart.labelRadius + " 0 1,1 -0.01 0");
+
+          labels.selectAll("text")
+            .data(da.values)
+          .enter().append("text")
+            .style("text-anchor", "middle")
+            .style("font-weight","bold")
+            .style("fill", "#3e3e3e")
+            .append("textPath")
+            .attr("xlink:href", "#label-path")
+            .attr("startOffset", function(d, i) { 
+              return i * 100 / da.values.length + 50 / da.values.length + '%';
+            })
+            .text(function(d) {return d.key; });
+
+            group=svg.append("g")
+          .attr("transform", "translate(" + RankingTypeViewSunBarChart.individualDiv/2 + "," + RankingTypeViewSunBarChart.height/2 + ")");
+
+      group.selectAll("path")
+          .data(da.values)
+          .enter()
+          .append("path")
+          .attr("fill","none")
+          .attr("stroke",color)
+          .attr("stroke-opacity",1)
+          .attr("stroke-width",0.3)
+          .attr("d",function(d,i){
+            var secondStart=i*Math.PI*2/da.values.length+RankingTypeViewSunBarChart.anglePadding;
+            var secondEnd=(i+1)*Math.PI*2/da.values.length-RankingTypeViewSunBarChart.anglePadding;
+
+            drawIndividualYears(d.values,color,secondStart,secondEnd,group);
+
+            return arc
+                 .innerRadius(RankingTypeViewSunBarChart.innerRadius)
+                 .outerRadius(RankingTypeViewSunBarChart.Radio)
+                 .startAngle(secondStart)
+                 .endAngle(secondEnd)(d);
+                 
+      });
+
+      
+  }
+}
+
+ function calculateScaleCenter_SmallMultiples(features,iWidth,iHeight) {
+        var bbox_path = path.bounds(features),
+          scale = 0.95 / Math.max(
+          (bbox_path[1][0] - bbox_path[0][0]) / iWidth,//(2*secondinnerRadius),
+          (bbox_path[1][1] - bbox_path[0][1]) /iHeight//(2*secondinnerRadius)
+          );
+
+        // Get the bounding box of the features (in map units!) and use it
+        // to calculate the center of the features.
+        var bbox_feature = d3.geoBounds(features),
+          center = [
+          (bbox_feature[1][0] + bbox_feature[0][0]) / 2,
+          (bbox_feature[1][1] + bbox_feature[0][1]) / 2];
+
+        return {
+        'scale': scale,
+        'center': center
+        };
+  } 
+
+
+  function drawIndividualYears(datus,color,startAngle,endAngle,group){
+  datus.sort(function(a,b){return Months.indexOf(a.key)-Months.indexOf(b.key);})
+  p=endAngle-startAngle;
+  
+  group.selectAll("paths")
+  .data(datus)
+  .enter()
+  .append("path")
+    .attr("fill",color)
+    .attr("opacity",0.3)
+    .attr("stroke",color)
+    .attr("stroke-opacity",1)
+    .attr("stroke-width",1.5)
+    .attr("d",function(d,i){
+      return arc
+           .innerRadius(RankingTypeViewSunBarChart.innerRadius)
+           .outerRadius(function(){return RankingTypeViewSunBarChart.Scale(d.values.length);})
+           .startAngle(function(){return startAngle+i*p/12})
+           .endAngle(function(){return startAngle+(i+1)*p/12})(d);
+    });
+}
+
+
+/*------------------------ END RANKING TYPE VIEW --------------------------------------*/
 /*-------------------------------------------------------------------------------------*/
-/*-------------------------------------------------------------------------------------*/
+/*------------------------ START MAKING GRAPHS-----------------------------------------*/
 function makeGraphs(){
     CreateGlobalTemporalView(GlobalTemporalView.svg,latArea,Data_GlobalTemporalView);
 
@@ -1025,10 +885,10 @@ function makeGraphs(){
 
     //JoyChart
     MakeTemporalCrimeTypeView(TotalData);
-    MakeTemporalSiteView(TotalData);
+    //MakeTemporalSiteView(TotalData);
     
 }
-
+/*
 function MakeTemporalSiteView(data){
     var temp=d3.nest()
             .key(function(f){return f.code;})
@@ -1042,7 +902,7 @@ function MakeTemporalSiteView(data){
       })
     });
     CreateTemporalSiteView(TemporalTypeView.svg,areaSite,array);
-}
+}*/
 
 function MakeTemporalCrimeTypeView(data){
     /*begin pre processing missing values*/
@@ -1065,16 +925,16 @@ function MakeTemporalCrimeTypeView(data){
           })
     });
     /* end pre processing missing values*/
-    CreateTemporalTypeView(TemporalTypeView.svg,areaType,array);
-    CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,array)
+    //CreateTemporalTypeView(TemporalTypeView.svg,areaType,array);
+    CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,array);
+    CreateSunBarChartTypeView(data);
 }
-
+/*
 function MakeTemporalSiteView_Hotspot(data){
      CreateTemporalSiteView(TemporalTypeView.svg,areaSite,data);
-} 
+} */
 
 function MakeTemporalCrimeTypeView_Hotspot(data){
-      CreateTemporalTypeView(TemporalTypeView.svg,areaType,data);
       CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,data)
 }
 

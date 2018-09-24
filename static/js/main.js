@@ -30,8 +30,8 @@ function init(){
       CumulativeTemporalView_Init();
       CumulativeTemporalView_Day_Init();
       CumulativeTemporalView_Period_Init();
-      CleanTemporalTypeView();
-      clean_TemporalSiteView();
+      //CleanTemporalTypeView();
+      //clean_TemporalSiteView();
       clean_RankingTypeView();
 }
 
@@ -71,6 +71,7 @@ function crimeDataExtraction(){
                   csData.labelDay 		  = csData.dimlabelDay.group();
                   csData.labelPeriod 		= csData.dimlabelPeriod.group();
              		
+                  GRAPH.CrimeTypeScale.domain(csData.CrimeTypes.all());
              		//sort by date
                  /* csData.Codes.all().sort(function(a,b){return GRAPH.codSetorList.indexOf(a.key) - GRAPH.codSetorList.indexOf(b.key);});
                   csData.labelMonth.all().sort(function(a,b){return MonthLabels.indexOf(a.key)-MonthLabels.indexOf(b.key);});
