@@ -50,6 +50,15 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
+.blockSelected{
+    border-style: dashed;/* 2px solid;*/
+
+}
+.blockSelected:hover{
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+
 
 .block_crimetype{
 
@@ -58,15 +67,16 @@
 .block_crimetype:hover{
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
-
-
-.blockSelected{
-    border-style: dashed;/* 2px solid;*/
+.block_crimetypeSelected{
 
 }
-.blockSelected:hover{
+
+.block_crimetypeSelected:hover{
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
+
+
+
 
 .Divtitle  {
     font-family: "source_sans_probold", sans-serif;

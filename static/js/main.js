@@ -37,6 +37,8 @@ function init(){
 
 //extraction of crime data
 function crimeDataExtraction(){
+  GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+
 	spinner.spin(GRAPH.target);
 	$.ajax({
 		data 		:{'setorcodes':JSON.stringify(GRAPH.codSetorList),'dataset':GRAPH.dataset},
@@ -184,7 +186,7 @@ function HotspotDetection(){
                        GRAPH.P_CodesCrimes[i].forEach(function(g){g.date=GRAPH.dateFmtHotspot(g["date"]); g.value=parseFloat(g.value);});
 
                        GRAPH.P_TypesCrimes[i]=json.Dcrimetype[i];
-                       GRAPH.P_TypesCrimes[i].forEach(function(g){g.date=GRAPH.dateFmtHotspot(g["date"]); g.value=parseFloat(g.value);}); 
+                       GRAPH.P_TypesCrimes[i].forEach(function(g){g.date=GRAPH.dateFmtHotspot(g["date"]); g.value=parseFloat(g.value); g.labelMonth=MonthLabels[g.date.getMonth()]}); 
 
                        var datanest = d3.nest()
                                       .key(function(d) { return d.date })

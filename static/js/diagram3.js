@@ -570,9 +570,15 @@ function clean_RankingTypeView(){
 }
 
 
-var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
+var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topnames){
   clean_RankingTypeView();
-  data.sort(function(a, b) { return a.date - b.date; });
+  var innerWidth    = RankingTypeView.width  - RankingTypeView.margin.right - RankingTypeView.margin.left;
+  var innerHeight   = RankingTypeView.height - RankingTypeView.margin.top   - RankingTypeView.margin.bottom;
+
+  RankingTypeView.xScale.domain(d3.extent(data, function(d){return d.date;})).range([0, innerWidth]);
+  RankingTypeView.yScale = d3.scaleLinear().domain([0,RankingTypeView.num]).range([0,innerHeight])
+
+  
   
   // nest by name and rank by total popularity
   var nested = d3.nest()
@@ -585,17 +591,9 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
     })
     .entries(data);
   
-  var innerWidth= RankingTypeView.width-RankingTypeView.margin.right-RankingTypeView.margin.left;
-  var innerHeight= RankingTypeView.height-RankingTypeView.margin.top-RankingTypeView.margin.bottom;
-  
-  RankingTypeView.xScale.domain(d3.extent(data, function(d){return d.date;})).range([0, innerWidth]);
-  RankingTypeView.yScale = d3.scaleLinear().domain([0,RankingTypeView.num]).range([0,innerHeight])
-  
   nested.sort(function(a, b) { return b.value.sum-a.value.sum;});
-  
-  var topnames = nested.slice(0,RankingTypeView.num).map(function(d,i) { if(i<5){return d.key; }});
-  
-  data = data.filter(function(d) { return topnames.indexOf(d.typeCrime) > -1;});
+  //var topnames = nested.slice(0,RankingTypeView.num).map(function(d,i) { if(i<5){return d.key; }});
+  //data = data.filter(function(d) { return topnames.indexOf(d.typeCrime) > -1;});
   
   RankingTypeView.radioScale.domain(d3.extent(data, function(d){return d.value;})).range([1,RankingTypeView.radio])
   
@@ -634,10 +632,11 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
       var radio=[];
       var points =[];
       yearspopular.forEach(function(d,j){
-        points.push({x: RankingTypeView.xScale(d.date), y:RankingTypeView.yScale(byYear[yearspopular[j].date][name.key]), t: RankingTypeView.radioScale(yearspopular[j].value)})
+        points.push({x: RankingTypeView.xScale(d.date), y:RankingTypeView.yScale(byYear[yearspopular[j].date][name.key]), t: RankingTypeView.radioScale(yearspopular[j].value),'typeCrime':name.key})
       });
   
     RankingTypeView.svg.select('.bumpchart')
+      .datum(points)
       .append("path")
       .attr("id",function(f){
           temp=name.key.split(' ').join('');
@@ -646,7 +645,8 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
       .attr("class","bumpchart")
       .attr("stroke", GRAPH.CrimeTypeScale(name.key))//colorRanking(name.key))
       .attr("stroke-width", "1px")
-      .attr("d", ribbon(points));
+      .attr("d", ribbon)
+      .on("click",eventoClickCrimeType);
     
       
     var start = yearspopular[0].date;
@@ -681,6 +681,41 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data){
   .call(d3.axisBottom(RankingTypeView.xScale).tickSize(6, 0));
 }
 
+function eventoClickCrimeType(d){
+  if(GRAPH.selectedCrimeType.toLowerCase()==d[0].typeCrime.toLowerCase()){
+    GRAPH.selectedCrimeType="";
+    cleanDivSelection_CrimeType();
+    RankingTypeView.svg.selectAll("path").attr("class","bumpchart");
+    UnselectedActionToCrimeType();
+    
+  }else{
+    UnselectedActionToCrimeType();
+    //TemporalTypeView.svg.select(".activities").selectAll("path").attr("class","areaType");
+    RankingTypeView.svg.selectAll("path").attr("class","bumpchart");
+
+    var temp=d[0].typeCrime.split(' ').join('');
+    d3.select("#bumpchart_"+temp.split('.').join('')).attr("class","bumpchartSelected");
+    d3.select("#sunBarChart_"+temp.split('.').join('')).attr("class","blockSelected");
+    GRAPH.selectedCrimeType=d[0].typeCrime;
+   // d3.select(this).attr("class","areaTypeSelected");
+    ActionToCrimeType(d[0].typeCrime);
+
+  }
+}
+
+function crimeTypeDivClick(element){
+  eventoClickCrimeType([{'typeCrime':element}]);
+}
+function cleanDivSelection_CrimeType(){
+    var list = document.getElementById("sunBarChart");
+    for (child = list.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType == 1) { // 1 == Element
+            child.setAttribute("class","block_crimetype");
+        }
+    }
+}
+
+
 
 /**************************************************************************************/
 var colores_g = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
@@ -694,7 +729,8 @@ RankingTypeViewSunBarChart.width  = myDiv_RankingTypeViewSunBarChart.clientWidth
 RankingTypeViewSunBarChart.height = myDiv_RankingTypeViewSunBarChart.clientHeight,
 RankingTypeViewSunBarChart.number = 5;
 
-RankingTypeViewSunBarChart.individualDiv=(myDiv_RankingTypeViewSunBarChart.clientWidth/RankingTypeViewSunBarChart.number)-5;
+RankingTypeViewSunBarChart.individualDiv=(myDiv_RankingTypeViewSunBarChart.clientWidth/RankingTypeViewSunBarChart.number);
+
 
 var arc = d3.arc();
 var p   = Math.PI*2;
@@ -706,16 +742,44 @@ RankingTypeViewSunBarChart.innerRadius  = 50;
 RankingTypeViewSunBarChart.barHeight    = RankingTypeViewSunBarChart.Radio;
 RankingTypeViewSunBarChart.labelRadius  = RankingTypeViewSunBarChart.barHeight * 1.025;
 
-function CreateSunBarChartTypeView(misDatos){
+function CreateSunBarChartTypeView_Hotspots(misDatos,topnames){
+      d3.select('#sunBarChart').selectAll("*").remove();
+      misDatos.forEach(function(g){g.year=(g.date).getFullYear();});
+      
+     data = d3.nest()
+           .key(function(f){return f.year;})
+            .key(function(d){return d.typeCrime;})
+              .key(function(d){return d.labelMonth;})
+                .rollup(function(v){return d3.sum(v,function(d){return d.value;});})
+                  .entries(misDatos);
+
+     //var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.values.length;});})});
+     var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.value;});})});
+     RankingTypeViewSunBarChart.Scale=d3.scaleLinear().domain([0, maximo]).range([RankingTypeViewSunBarChart.innerRadius+1,RankingTypeViewSunBarChart.Radio]);
+
+     var Second_data = d3.nest()
+             .key(function(f){return f.typeCrime;})
+                .key(function(d){return d.year;})
+                    .key(function(d){return d.labelMonth;})
+                        .rollup(function(v){return d3.sum(v,function(d){return d.value;});})
+                    .entries(misDatos);
+
+     Second_data.sort(function(a,b){return topnames.indexOf(b.key)-topnames.indexOf(a.key);});
+    
+     visualize(Second_data,SetoresList,[],1,true);           
+}
+function CreateSunBarChartTypeView(misDatos,topnames){
+    d3.select('#sunBarChart').selectAll("*").remove();
     misDatos.forEach(function(g){g.year=(g.date).getFullYear();});
-    var temp = d3.nest()
+   /* var temp = d3.nest()
        .key(function(r){return r.crimeType})
        .entries(misDatos);
 
     temp.sort(function(a,b){return b.values.length-a.values.length});
     var num=RankingTypeViewSunBarChart.number;
-    var topnames = temp.slice(0,num).map(function(d,i) { if(i<num){ return d.key; }  });
+    var topnames = temp.slice(0,num).map(function(d,i) { if(i<num){ return d.key; }  });*/
 
+    //misDatos.forEach(function(g){g.year=(g.date).getFullYear();});
     misDatos=misDatos.filter(function(d) { return (topnames.indexOf(d.crimeType) > -1); });
 
     data = d3.nest()
@@ -724,9 +788,16 @@ function CreateSunBarChartTypeView(misDatos){
             .key(function(d){return d.labelMonth;})
          .entries(misDatos);
 
+    temp1=d3.nest()
+         .key(function(f){return f.code;})
+         .key(function(d){return d.crimeType})
+         .rollup(function(v){return v.length})
+         .entries(misDatos);
+    codemax=d3.max(temp1,function(d){ return d3.max(d.values,function(f){return f.value;})})
+
     var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.values.length;});})});
 
-    RankingTypeViewSunBarChart.Scale=d3.scaleLinear().domain([0, maximo]).range([RankingTypeViewSunBarChart.innerRadius,RankingTypeViewSunBarChart.Radio]);
+    RankingTypeViewSunBarChart.Scale=d3.scaleLinear().domain([0, maximo]).range([RankingTypeViewSunBarChart.innerRadius+1,RankingTypeViewSunBarChart.Radio]);
 
     var Second_data = d3.nest()
              .key(function(f){return f.crimeType;})
@@ -734,28 +805,34 @@ function CreateSunBarChartTypeView(misDatos){
              .key(function(d){return d.labelMonth;}).entries(misDatos);
              
     Second_data.sort(function(a,b){return topnames.indexOf(b.key)-topnames.indexOf(a.key);})
-
-    var scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
     
-    projection.scale(scaleCenter.scale)
-      .center(scaleCenter.center)
+    projection.scale(GRAPH.scaleCenter.scale)
+      .center(GRAPH.scaleCenter.center)
       .translate([RankingTypeViewSunBarChart.innerRadius , RankingTypeViewSunBarChart.innerRadius ]);
 
-    visualize(Second_data,SetoresList);
+    visualize(Second_data,SetoresList,temp1,codemax,false);
 }
 
-function visualize(data,states){
+function visualize(data,states,temp1,codemax,hotspot){
+  var codeCrimeTypeScale=d3.scaleLinear().domain([0,codemax]).range([0,1]);
   var visualizationWrapper = d3.select('#sunBarChart');
   data.slice().reverse().forEach(function(d,i){
       var wrapper = visualizationWrapper
         .append('div')
-                    .style("width", RankingTypeViewSunBarChart.individualDiv + 'px')
+          .attr("id",function(f){
+                   temp=d.key.split(' ').join('');
+                   return "sunBarChart_"+temp.split('.').join('');})
+          .style("width", RankingTypeViewSunBarChart.individualDiv + 'px')
           .style("height", RankingTypeViewSunBarChart.height + 'px')
-          .attr('class',"block_crimetype");
-      createSunChart(wrapper,d,states,GRAPH.CrimeTypeScale(d.key));
+          .attr('class',"block_crimetype")
+          .on("click",function(){
+              crimeTypeDivClick(d.key);
+          });
+
+      createSunChart(wrapper,d,states,GRAPH.CrimeTypeScale(d.key),temp1,codeCrimeTypeScale,hotspot);
   });
 
-  function createSunChart(wrapper,da,states,color){
+  function createSunChart(wrapper,da,states,color,temp1,codeCrimeTypeScale,hotspot){
           wrapper.append('p')
                 .text(da.key.toLowerCase())
                 .style("color",color)
@@ -773,10 +850,20 @@ function visualize(data,states){
                 .data(states.features)
                 .enter()
                 .append('path')
-                .attr('opacity', "0.3")
-
-                .attr('fill',color)
-                .attr('stroke',color)
+                .attr('fill', color)
+                .attr('fill-opacity',function(s){
+                         let ind      = arrayObjectIndexOf(temp1,s.properties.codsetor,"key");
+                         if(ind>=0){
+                            let temporal = temp1[ind].values;
+                            let ind2     = arrayObjectIndexOf(temporal,da.key,"key");
+                            if(ind2>=0){
+                                return codeCrimeTypeScale(temporal[ind2].value);
+                            }else{ return 0;}
+                         }else{return 0;}
+                    })
+                .attr('stroke',"black")
+                .attr('stroke-width',0.5)
+                .attr('stroke-opacity',1)
                 .attr('d', path);
 
             var labels = svg.append("g")
@@ -815,7 +902,7 @@ function visualize(data,states){
             var secondStart=i*Math.PI*2/da.values.length+RankingTypeViewSunBarChart.anglePadding;
             var secondEnd=(i+1)*Math.PI*2/da.values.length-RankingTypeViewSunBarChart.anglePadding;
 
-            drawIndividualYears(d.values,color,secondStart,secondEnd,group);
+            drawIndividualYears(d.values,color,secondStart,secondEnd,group,hotspot);
 
             return arc
                  .innerRadius(RankingTypeViewSunBarChart.innerRadius)
@@ -850,26 +937,31 @@ function visualize(data,states){
   } 
 
 
-  function drawIndividualYears(datus,color,startAngle,endAngle,group){
-  datus.sort(function(a,b){return Months.indexOf(a.key)-Months.indexOf(b.key);})
-  p=endAngle-startAngle;
-  
-  group.selectAll("paths")
-  .data(datus)
-  .enter()
-  .append("path")
-    .attr("fill",color)
-    .attr("opacity",0.3)
-    .attr("stroke",color)
-    .attr("stroke-opacity",1)
-    .attr("stroke-width",1.5)
-    .attr("d",function(d,i){
-      return arc
-           .innerRadius(RankingTypeViewSunBarChart.innerRadius)
-           .outerRadius(function(){return RankingTypeViewSunBarChart.Scale(d.values.length);})
-           .startAngle(function(){return startAngle+i*p/12})
-           .endAngle(function(){return startAngle+(i+1)*p/12})(d);
-    });
+  function drawIndividualYears(datus,color,startAngle,endAngle,group,hotspot){
+        datus.sort(function(a,b){return Months.indexOf(a.key)-Months.indexOf(b.key);})
+        p=endAngle-startAngle;
+        
+        group.selectAll("paths")
+        .data(datus)
+        .enter()
+        .append("path")
+          .attr("fill",color)
+          .attr("opacity",0.3)
+          .attr("stroke",color)
+          .attr("stroke-opacity",1)
+          .attr("stroke-width",1.5)
+          .attr("d",function(d,i){
+                auxiliar=0;
+                if(hotspot){
+                    auxiliar=RankingTypeViewSunBarChart.Scale(d.value);
+                }else{auxiliar=RankingTypeViewSunBarChart.Scale(d.values.length);}
+            return arc
+                 .innerRadius(RankingTypeViewSunBarChart.innerRadius)
+                 .outerRadius(function(){return auxiliar; })//RankingTypeViewSunBarChart.Scale(d.values.length);})
+                 .startAngle(function(){return startAngle+i*p/12})
+                 .endAngle(function(){return startAngle+(i+1)*p/12})(d);
+                 
+          });
 }
 
 
@@ -925,9 +1017,24 @@ function MakeTemporalCrimeTypeView(data){
           })
     });
     /* end pre processing missing values*/
+
+    let nested = d3.nest()
+                .key(function(d) { return d.typeCrime; })
+                .rollup(function(leaves) {
+                  return {
+                    data: leaves,
+                    sum: d3.sum(leaves, function(d) { return d.value; })
+                  };
+                })
+                .entries(array);
+   
+   nested.sort(function(a, b) { return b.value.sum-a.value.sum;});
+   var topnames = nested.slice(0,RankingTypeView.num).map(function(d,i) { if(i<RankingTypeView.num){return d.key; }});
+   array = array.filter(function(d) { return topnames.indexOf(d.typeCrime) > -1;});
+   array.sort(function(a, b) { return a.date - b.date; });
     //CreateTemporalTypeView(TemporalTypeView.svg,areaType,array);
-    CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,array);
-    CreateSunBarChartTypeView(data);
+   CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,array,topnames);
+   CreateSunBarChartTypeView(data,topnames);
 }
 /*
 function MakeTemporalSiteView_Hotspot(data){
@@ -935,7 +1042,18 @@ function MakeTemporalSiteView_Hotspot(data){
 } */
 
 function MakeTemporalCrimeTypeView_Hotspot(data){
-      CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,data)
+    let temp=d3.nest()
+              .key(function(f){return f.typeCrime;})
+              .rollup(function(leaves){return d3.sum(leaves,function(s){return s.value});})
+              .entries(data);
+  
+    temp.sort(function(a, b) { return b.value-a.value;});
+    var topnames = temp.slice(0,RankingTypeView.num).map(function(d,i) { if(i<RankingTypeView.num){return d.key; }});
+
+    array = data.filter(function(d){return topnames.indexOf(d.typeCrime) > -1;});
+
+    CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,array)
+    CreateSunBarChartTypeView_Hotspots(array,topnames);
 }
 
 /**********************************************************************************************************/

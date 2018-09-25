@@ -453,8 +453,8 @@ function ActionToCrimeType(codeType){
     updateCumulative_Day(csData.labelDay.all());
     updateCumulative_Period(csData.labelPeriod.all());
 
-    temp=TotalData.filter(function(d){return d.crimeType==codeType});
-    MakeTemporalSiteView(temp);
+    //temp=TotalData.filter(function(d){return d.crimeType==codeType});
+    //MakeTemporalSiteView(temp);
 }
 
 function UnselectedActionToCrimeType(){
@@ -473,7 +473,7 @@ function UnselectedActionToCrimeType(){
         updateCumulative_Day(csData.labelDay.all());
         updateCumulative_Period(csData.labelPeriod.all());
     }
-    MakeTemporalSiteView(TotalData);
+    //MakeTemporalSiteView(TotalData);
 }
 
 /*-------------------------------------------------***************************************************/
