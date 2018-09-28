@@ -106,12 +106,18 @@ function RenderAll(){
 function HotspotDetection(){
       d3.select('#patternDiv').selectAll("*").remove();
       //dataFilter, crime type and time period
-      if(GRAPH.SiteSelected!=""){
-      }
-
+      
       var AuxTotalData=TotalData;
-      var MinDate=d3.min(AuxTotalData,function(d){return d.date;});
-      var MaxDate=d3.max(AuxTotalData,function(d){return d.date;});
+      var MinDate,MaxDate;
+
+      if(GRAPH.MaxDateSelected!="" && GRAPH.MaxDateSelected!=undefined ){
+          MinDate=GRAPH.MinDateSelected;
+          MaxDate=GRAPH.MaxDateSelected;
+       }else{
+            MinDate=d3.min(AuxTotalData,function(d){return d.date;});
+            MaxDate=d3.max(AuxTotalData,function(d){return d.date;});
+       }
+
       var range=DiscretizationFunction.count(MinDate,MaxDate);
       var dates=[];
       for(i=0;i<=range;i++){ dates.push(DateToString(DiscretizationFunction.offset(MinDate,i)));     }
@@ -127,12 +133,14 @@ function HotspotDetection(){
       var ListOfCrimeTypes    = csData.CrimeTypes.all().map(function(g){return g.key});
       var ListOfLabelsDay     = csData.labelDay.all().map(function(g){return g.key});
       var ListOfLabelsMonth   = csData.labelMonth.all().map(function(g){return g.key});
-      var ListOfLabelsPeriod  = csData.labelPeriod.all().map(function(g){return g.key}) ;
-
-      
+      var ListOfLabelsPeriod  = csData.labelPeriod.all().map(function(g){return g.key}) ; 
 
       spinner.spin(GRAPH.target);
       
+      if(GRAPH.SiteSelected!="" &&GRAPH.SiteSelected!=undefined){
+        ListOfCrimeTypes=[GRAPH.SiteSelected];
+      }
+
 
       $.ajax({
             data:{'ListOfCodes':JSON.stringify(GRAPH.codSetorList),

@@ -4,6 +4,7 @@ var MonthLabels  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct",
 var DayLabels    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 var PeriodLabels = ["Mor","Aft","Eve",'Dawn'];
 
+
 var GRAPH={};
     GRAPH.ColorPaletterName   = "interpolateYlOrBr";
     GRAPH.CategoricalColors=["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
@@ -14,6 +15,7 @@ var GRAPH={};
     GRAPH.SelectedSite        = "";
     GRAPH.selectedCrimeType   = "";
     GRAPH.MinIndividualDiv=250;
+    GRAPH.ordinalMonthScale = d3.scaleOrdinal().domain(MonthLabels).range([1,2,3,4,5,6,7,8,9,10,11, 12]);
 
  GRAPH.CrimeTypeScale = d3.scaleOrdinal()
     //.range(["#DB7F85", "#50AB84", "#4C6C86", "#C47DCB", "#B59248", "#DD6CA7", "#E15E5A", "#5DA5B3", "#725D82", "#54AF52", "#954D56", "#8C92E8", "#D8597D", "#AB9C27", "#D67D4B", "#D58323", "#BA89AD", "#357468", "#8F86C2", "#7D9E33", "#517C3F", "#9D5130", "#5E9ACF", "#776327", "#944F7E"]);

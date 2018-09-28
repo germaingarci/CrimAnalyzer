@@ -138,13 +138,15 @@ function brushed(){
 function brushmoved(){
     if (!d3.event.sourceEvent) return; // Only transition after input.
     if (!d3.event.selection)   {
-         csData.dimTime.filterAll();
-          
-           MakeTemporalCrimeTypeView(TotalData);
-          
-          updateCumulativeViewRemove();
-          updateCumulativeView_DayRemove();
-          updateCumulativeView_PeriodRemove();
+        csData.dimTime.filterAll();
+         
+        MakeTemporalCrimeTypeView(TotalData);
+         
+        updateCumulativeViewRemove();
+        updateCumulativeView_DayRemove();
+        updateCumulativeView_PeriodRemove();
+        GRAPH.MinDateSelected="";
+        GRAPH.MaxDateSelected="";
     } // Ignore empty selections.
     var selection = d3.event.selection.map(GlobalTemporalView.xScale.invert);
 
@@ -157,6 +159,8 @@ function brushmoved(){
          array=TotalData.filter(function(d){return (d.date>=inicialDate && d.date<=endDate);});
           MakeTemporalCrimeTypeView(array);
 
+         GRAPH.MinDateSelected=inicialDate;
+         GRAPH.MaxDateSelected=endDate;
 
     }else{// se filtra todo de nuevo
           csData.dimTime.filterAll();
@@ -708,7 +712,7 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topname
           temp=name.key.split(' ').join('');
           return "bumpchart_"+temp.split('.').join('');})
       .attr("fill", GRAPH.CrimeTypeScale(name.key))//colorRanking(name.key))
-      .attr("class","bumpchart")
+      .attr("class",function(f){if(GRAPH.selectedCrimeType.toLowerCase()==name.key.toLowerCase()){return "bumpchartSelected";}else{ return "bumpchart";}})
       .attr("stroke", GRAPH.CrimeTypeScale(name.key))//colorRanking(name.key))
       .attr("stroke-width", "1px")
       .attr("d", ribbon)
@@ -907,7 +911,8 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
                    return "sunBarChart_"+temp.split('.').join('');})
           .style("width", RankingTypeViewSunBarChart.individualDiv + 'px')
           .style("height", RankingTypeViewSunBarChart.height + 'px')
-          .attr('class',"block_crimetype")
+          .attr('class',function(f){if(GRAPH.selectedCrimeType.toLowerCase()==d.key.toLowerCase()){ return "blockSelected"}else{ return "block_crimetype";}})
+          //.attr('class',"block_crimetype")
           .on("click",function(){
               crimeTypeDivClick(d.key);
           });
@@ -1045,8 +1050,8 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
             return arc
                  .innerRadius(RankingTypeViewSunBarChart.innerRadius)
                  .outerRadius(function(){return auxiliar; })//RankingTypeViewSunBarChart.Scale(d.values.length);})
-                 .startAngle(function(){return startAngle+i*p/12})
-                 .endAngle(function(){return startAngle+(i+1)*p/12})(d);
+                 .startAngle(function(){return startAngle+(GRAPH.ordinalMonthScale(d.key)-1)*p/12})
+                 .endAngle(function(){return startAngle+(GRAPH.ordinalMonthScale(d.key))*p/12})(d);
                  
           });
 }
