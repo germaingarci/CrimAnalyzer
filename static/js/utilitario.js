@@ -31,3 +31,41 @@ function arrayObjectIndexOf_Date(myArray, searchTerm, property) {
     }
     return -1;
 }
+/*
+function hodrick_Prescott(timeSerie,binsNumber){//,dates,tipo){
+    var respuesta;
+    var indexs;
+    var means;
+   $.ajax({
+       data:{'timeseries':JSON.stringify(timeSerie),'binsNumber':binsNumber},//,'dates':dates,'tipo'},
+       url : '/trend_extraction/',
+       async: false,
+       type: 'get',
+       dataType : 'json',
+       success : function(json) {
+             respuesta=json.respuesta;
+             indexs=json.indexs;
+             means=json.means;
+          }
+      });
+    return [respuesta,indexs,means];
+}*/
+
+function hodrick_Prescott(timeSerie,binsNumber){//,dates,tipo){
+    var respuesta;
+    var indexs;
+    var means;
+   $.ajax({
+      data:{'timeseries':JSON.stringify(timeSerie),'binsNumber':binsNumber},//,'dates':dates,'tipo'},
+       url : '/trend_extraction/',
+       async: false,
+       type: 'get',
+       dataType : 'json',
+       success : function(json) {
+             respuesta=json.respuesta;
+             indexs=json.indexs;
+             means=json.means;
+          }
+      });
+    return {"respuesta":respuesta,"indexs":indexs,"means":means};
+}

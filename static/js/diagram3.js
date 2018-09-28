@@ -93,6 +93,7 @@ var CreateGlobalTemporalView =function CreateGlobalTemporalView(group, area, nes
           [GlobalTemporalView.xScale.range()[1], GlobalTemporalView.yScale.range()[0]]
         ])
         .on("brush", brushed)
+        .on("end", brushmoved)
       );
 
 }
@@ -122,6 +123,50 @@ function brushed(){
     if (!d3.event.selection) return; // Ignore empty selections.
     var selection = d3.event.selection.map(GlobalTemporalView.xScale.invert);
 
+
+    csData.dimTime.filter(selection);
+    remakeGraph();
+    updateCumulativeViewRemove();
+    updateCumulativeView_DayRemove();
+    updateCumulativeView_PeriodRemove();
+
+    updateCumulative(csData.labelMonth.all());
+    updateCumulative_Day(csData.labelDay.all());
+    updateCumulative_Period(csData.labelPeriod.all());
+}
+
+function brushmoved(){
+    if (!d3.event.sourceEvent) return; // Only transition after input.
+    if (!d3.event.selection)   {
+         csData.dimTime.filterAll();
+          
+           MakeTemporalCrimeTypeView(TotalData);
+          
+          updateCumulativeViewRemove();
+          updateCumulativeView_DayRemove();
+          updateCumulativeView_PeriodRemove();
+    } // Ignore empty selections.
+    var selection = d3.event.selection.map(GlobalTemporalView.xScale.invert);
+
+    if(selection.length>0){
+         csData.dimTime.filter(selection);
+        
+        var  inicialDate  = selection[0],
+          endDate = selection[1];
+
+         array=TotalData.filter(function(d){return (d.date>=inicialDate && d.date<=endDate);});
+          MakeTemporalCrimeTypeView(array);
+
+
+    }else{// se filtra todo de nuevo
+          csData.dimTime.filterAll();
+          
+           MakeTemporalCrimeTypeView(TotalData);
+          
+          updateCumulativeViewRemove();
+          updateCumulativeView_DayRemove();
+          updateCumulativeView_PeriodRemove();
+    }
 }
 
 //CreateGlobalTemporalView(GlobalTemporalView.svg,latArea,toyData);
@@ -135,8 +180,8 @@ GlobalCumulativeTemporalView.Graph    = d3.select("#Total_Cumulative_BarChart")
 
 
 /*-------------------------------------------------
- -----------------------------------*/
-/*                  Cumulative Temporal View*/
+ --------------------------------------------------------------------------------------*/
+/*                           Cumulative Temporal View*/
 /*------------------------------------------------------------------------------------*/
 var CumulativeTemporalView={};
 //var myDiv_CumulativeTemporalView  = document.getElementById("cumulativeBarChart");
@@ -541,6 +586,7 @@ RankingTypeView.height    = div_RankingTypeView.clientHeight//5*30;
 RankingTypeView.Graph     = d3.select("#rankingTypeView").append("svg").attr("width", RankingTypeView.width).attr("height", RankingTypeView.height);
 RankingTypeView.num       = 5;
 RankingTypeView.radio     = 8;
+RankingTypeView.NumberThreshold   = 100;
 
   
 RankingTypeView.svg= RankingTypeView.Graph.append("g")
@@ -594,7 +640,27 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topname
   nested.sort(function(a, b) { return b.value.sum-a.value.sum;});
   //var topnames = nested.slice(0,RankingTypeView.num).map(function(d,i) { if(i<5){return d.key; }});
   //data = data.filter(function(d) { return topnames.indexOf(d.typeCrime) > -1;});
-  
+
+  /*nested.forEach(function(d){
+      let TempValues=[];
+      d.value.data.forEach(function(f){ TempValues.push(f.value);});
+      let respuesta=hodrick_Prescott(TempValues,Math.min(100,d.value.data.length));
+
+      d.value.data.forEach(function(f,i){f.value=parseFloat(respuesta.respuesta[i]);})
+  });*/
+
+  /*----------------------------------------------------*/
+    if(RankingTypeView.NumberThreshold<nested[0].value.data.length){
+            nested.forEach(function(d,i){
+                let TempValues=[];
+                d.value.data.forEach(function(f){ TempValues.push(f.value);});
+                let respuesta=hodrick_Prescott(TempValues,Math.min(100,d.value.data.length));
+                d.value.data.forEach(function(f,i){f.value=parseFloat(respuesta.respuesta[i]);});
+                d.value.data=getElementWithIndex(d.value.data,respuesta.indexs);
+      });
+     }
+  /*----------------------------------------------------*/
+
   RankingTypeView.radioScale.domain(d3.extent(data, function(d){return d.value;})).range([1,RankingTypeView.radio])
   
   var byYear={};
@@ -689,6 +755,7 @@ function eventoClickCrimeType(d){
     UnselectedActionToCrimeType();
     
   }else{
+    cleanDivSelection_CrimeType();
     UnselectedActionToCrimeType();
     //TemporalTypeView.svg.select(".activities").selectAll("path").attr("class","areaType");
     RankingTypeView.svg.selectAll("path").attr("class","bumpchart");
@@ -717,7 +784,10 @@ function cleanDivSelection_CrimeType(){
 
 
 
-/**************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*                          SUN sunBarChart                                  */
+/*****************************************************************************/
 var colores_g = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
 var Months=["jan","feb","mar","apr","may","jun","jul","aug","sept","oct","nov","dec"];
 
@@ -765,8 +835,15 @@ function CreateSunBarChartTypeView_Hotspots(misDatos,topnames){
                     .entries(misDatos);
 
      Second_data.sort(function(a,b){return topnames.indexOf(b.key)-topnames.indexOf(a.key);});
+
+    sumTotal=0;
+    Second_data.forEach(function(d){
+        d.sumatoria=d3.sum(d.values,function(f){return d3.sum(f.values,function(t){return t.value;})});
+        sumTotal+=d.sumatoria;
+    });
+
     
-     visualize(Second_data,SetoresList,[],1,true);           
+     visualize(Second_data,SetoresList,[],1,true,sumTotal);           
 }
 function CreateSunBarChartTypeView(misDatos,topnames){
     d3.select('#sunBarChart').selectAll("*").remove();
@@ -806,14 +883,20 @@ function CreateSunBarChartTypeView(misDatos,topnames){
              
     Second_data.sort(function(a,b){return topnames.indexOf(b.key)-topnames.indexOf(a.key);})
     
+    sumTotal=0;
+    Second_data.forEach(function(d){
+        d.sumatoria=d3.sum(d.values,function(f){return d3.sum(f.values,function(t){return t.values.length;})});
+        sumTotal+=d.sumatoria;
+    });
+
     projection.scale(GRAPH.scaleCenter.scale)
       .center(GRAPH.scaleCenter.center)
       .translate([RankingTypeViewSunBarChart.innerRadius , RankingTypeViewSunBarChart.innerRadius ]);
 
-    visualize(Second_data,SetoresList,temp1,codemax,false);
+    visualize(Second_data,SetoresList,temp1,codemax,false,sumTotal);
 }
 
-function visualize(data,states,temp1,codemax,hotspot){
+function visualize(data,states,temp1,codemax,hotspot,sumTotal){
   var codeCrimeTypeScale=d3.scaleLinear().domain([0,codemax]).range([0,1]);
   var visualizationWrapper = d3.select('#sunBarChart');
   data.slice().reverse().forEach(function(d,i){
@@ -829,24 +912,30 @@ function visualize(data,states,temp1,codemax,hotspot){
               crimeTypeDivClick(d.key);
           });
 
-      createSunChart(wrapper,d,states,GRAPH.CrimeTypeScale(d.key),temp1,codeCrimeTypeScale,hotspot);
+      createSunChart(wrapper,d,states,GRAPH.CrimeTypeScale(d.key),temp1,codeCrimeTypeScale,hotspot,sumTotal);
   });
 
-  function createSunChart(wrapper,da,states,color,temp1,codeCrimeTypeScale,hotspot){
+  function createSunChart(wrapper,da,states,color,temp1,codeCrimeTypeScale,hotspot,sumTotal){
           wrapper.append('p')
-                .text(da.key.toLowerCase())
-                .style("color",color)
-              .attr("fill-opacity",1)
-                .attr('class', 'legend');
-                
+                 .text(da.key.toLowerCase())
+                 .style("color",color)
+                 .attr("fill-opacity",1)
+                 .attr('class', 'legend');
+          
+          wrapper.append('p')
+                 .text(((da.sumatoria/sumTotal)*100).toFixed(3).slice(0,-1)+" %")
+                 .style("color","gray")
+                 .attr("fill-opacity",1)
+                 .attr('class', 'legendPercent');
 
-            var svg = wrapper.append('svg')
+
+          var svg = wrapper.append('svg')
                 .attr("width", RankingTypeViewSunBarChart.individualDiv)
                 .attr("height", RankingTypeViewSunBarChart.height);
 
-      var mapsvg=svg.append("g").attr("transform", "translate(" + (RankingTypeViewSunBarChart.individualDiv/2-RankingTypeViewSunBarChart.innerRadius) + "," + (RankingTypeViewSunBarChart.height/2-RankingTypeViewSunBarChart.innerRadius) + ")");
+          var mapsvg=svg.append("g").attr("transform", "translate(" + (RankingTypeViewSunBarChart.individualDiv/2-RankingTypeViewSunBarChart.innerRadius) + "," + (RankingTypeViewSunBarChart.height/2-RankingTypeViewSunBarChart.innerRadius) + ")");
 
-       mapsvg.selectAll('path_map')
+          mapsvg.selectAll('path_map')
                 .data(states.features)
                 .enter()
                 .append('path')
@@ -894,7 +983,7 @@ function visualize(data,states,temp1,codemax,hotspot){
           .data(da.values)
           .enter()
           .append("path")
-          .attr("fill","none")
+          .attr("fill","white")
           .attr("stroke",color)
           .attr("stroke-opacity",1)
           .attr("stroke-width",0.3)
@@ -910,9 +999,7 @@ function visualize(data,states,temp1,codemax,hotspot){
                  .startAngle(secondStart)
                  .endAngle(secondEnd)(d);
                  
-      });
-
-      
+      });      
   }
 }
 
@@ -962,6 +1049,12 @@ function visualize(data,states,temp1,codemax,hotspot){
                  .endAngle(function(){return startAngle+(i+1)*p/12})(d);
                  
           });
+}
+
+function getElementWithIndex(array1,indexs){
+  respuesta=[];
+  indexs.forEach(function(d){respuesta.push(array1[d]);});
+  return respuesta;
 }
 
 

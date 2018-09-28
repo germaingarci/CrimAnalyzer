@@ -33,6 +33,8 @@ function init(){
       //CleanTemporalTypeView();
       //clean_TemporalSiteView();
       clean_RankingTypeView();
+       d3.select('#sunBarChart').selectAll("*").remove();
+      cleanDivSelection_CrimeType();
 }
 
 //extraction of crime data

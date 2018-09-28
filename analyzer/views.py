@@ -13,6 +13,12 @@ from .crimeExtraction import DynamicSignalExtraction
 from .nmf2 import Main_NMF
 import datetime
 import calendar
+################################
+import statsmodels.api as sm
+import numpy as np
+import math
+################################
+
 # Create your views here.
 class HomePageView(TemplateView):
 	template_name		= 'index.html'
@@ -53,7 +59,7 @@ def crime_Data_Extraction(request):
 
 def Get_Hotspots(request):
    
-    formato_fecha = "%Y-%m-%d %H:%M:%S"
+    formato_fecha   = "%Y-%m-%d %H:%M:%S"
     ListOfSites     = json.loads(request.GET.get('ListOfCodes'))
     ListOfCrimeTypes= json.loads(request.GET.get('ListOfCrimeTypes'))
     ListOfDates     = json.loads(request.GET.get('dates'))
@@ -67,8 +73,52 @@ def Get_Hotspots(request):
     ListOfDays      = json.loads(request.GET.get('ListOfDays'))
     ListOfPeriods   = json.loads(request.GET.get('ListOfPeriods'))
 
-    crimeType=request.GET.get('crimeType')
+    crimeType       = request.GET.get('crimeType')
     resultado       = Main_NMF(k,ListOfSites,ListOfCrimeTypes,ListOfDates,DataMin,DataMax,dataset,crimeType,ListOfMonths,ListOfDays,ListOfPeriods)
 
     return HttpResponse(json.dumps(resultado),content_type='application/json')
 
+
+#--------------------------terceros-----------------    
+def slice_it(li, cols=2):
+    start = 0
+    respuesta=[]
+    indexs=[]
+    means=[]
+    for i in range(cols):
+        stop = start + len(li[i::cols])
+        respuesta.append(li[start:stop])
+        indexs.append(math.floor((start+stop)/2))
+        start = stop
+
+    for ss in respuesta:
+        means.append(ss.mean())
+    return [means,indexs]
+
+def generic_hodrick_Prescott(request):
+    y=request.GET.get('timeseries')
+    timeseries=json.loads(y)
+    temp = sm.tsa.filters.hpfilter(timeseries, 10)
+    respuesta=[]
+    for d in temp[1]:
+        #if(d<0):
+        #    d=0
+        respuesta.append(str(round(d,4)))
+    #return respuesta
+    return HttpResponse(json.dumps({"respuesta":respuesta}),content_type='application/json')
+
+#--------------------------terceros-----------------
+
+def trend_extraction(request):
+    trend       = request.GET.get('timeseries')
+    i           = int(request.GET.get('binsNumber'))
+    lamb        = 10
+    y           = json.loads(trend)
+    temp        = sm.tsa.filters.hpfilter(y, lamb=lamb)
+    respuesta   = []
+    for d in temp[1]:
+        if(d<0):
+            d=0
+        respuesta.append(str(round(d,4)))
+    [means,indexs]=slice_it(temp[1],i)
+    return HttpResponse(json.dumps({"respuesta":respuesta,"indexs":indexs,"means":means}),content_type='application/json')
