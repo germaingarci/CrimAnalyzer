@@ -14,8 +14,10 @@ var GRAPH={};
     GRAPH.codSetorList        = [];
     GRAPH.SelectedSite        = "";
     GRAPH.selectedCrimeType   = "";
-    GRAPH.MinIndividualDiv=250;
-    GRAPH.ordinalMonthScale = d3.scaleOrdinal().domain(MonthLabels).range([1,2,3,4,5,6,7,8,9,10,11, 12]);
+    GRAPH.MinIndividualDiv    = 250;
+    GRAPH.ordinalMonthScale   = d3.scaleOrdinal().domain(MonthLabels).range([1,2,3,4,5,6,7,8,9,10,11, 12]);
+    GRAPH.TopSelectedCrimeTypes = [];
+    GRAPH.TopSelectedYears      = [];
 
  GRAPH.CrimeTypeScale = d3.scaleOrdinal()
     //.range(["#DB7F85", "#50AB84", "#4C6C86", "#C47DCB", "#B59248", "#DD6CA7", "#E15E5A", "#5DA5B3", "#725D82", "#54AF52", "#954D56", "#8C92E8", "#D8597D", "#AB9C27", "#D67D4B", "#D58323", "#BA89AD", "#357468", "#8F86C2", "#7D9E33", "#517C3F", "#9D5130", "#5E9ACF", "#776327", "#944F7E"]);
@@ -218,6 +220,7 @@ function drawLeafletMap(geoShape){
         // initialize the path data 
         d3_features.attr("d", path)
                    .style("fill-opacity", 0.8)
+                   .attr("stdDeviation","3.5")
                    .attr('fill',function(d,i){
                         //style when is selected
                         if(d.properties.codsetor==GRAPH.SelectedSite || d.properties.codsetor==GRAPH.ClickadosSetores){

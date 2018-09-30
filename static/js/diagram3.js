@@ -1,3 +1,6 @@
+var AditionalCrimeTypeAddtional = dc.rowChart("#CrimeTypeList");
+var YearRowChartAdditional  = dc.rowChart("#YearRankingView");
+
 /*------------------------------------------------------------------------------------*/
 /*                  Global Temporal View*/
 /*------------------------------------------------------------------------------------*/
@@ -125,7 +128,7 @@ function brushed(){
 
 
     csData.dimTime.filter(selection);
-    remakeGraph();
+   
     updateCumulativeViewRemove();
     updateCumulativeView_DayRemove();
     updateCumulativeView_PeriodRemove();
@@ -133,6 +136,7 @@ function brushed(){
     updateCumulative(csData.labelMonth.all());
     updateCumulative_Day(csData.labelDay.all());
     updateCumulative_Period(csData.labelPeriod.all());
+     remakeGraph();
 }
 
 function brushmoved(){
@@ -147,6 +151,7 @@ function brushmoved(){
         updateCumulativeView_PeriodRemove();
         GRAPH.MinDateSelected="";
         GRAPH.MaxDateSelected="";
+        remakeGraph();
     } // Ignore empty selections.
     var selection = d3.event.selection.map(GlobalTemporalView.xScale.invert);
 
@@ -171,6 +176,7 @@ function brushmoved(){
           updateCumulativeView_DayRemove();
           updateCumulativeView_PeriodRemove();
     }
+    //remakeGraph();
 }
 
 //CreateGlobalTemporalView(GlobalTemporalView.svg,latArea,toyData);
@@ -583,13 +589,15 @@ function updateCumulative_Period(data){
 /****************************************************************************/
 
 var RankingTypeView       = {};
-RankingTypeView.margin    = {top: 30, right: 200, bottom: 30, left: 200};
+//RankingTypeView.margin    = {top: 30, right: 200, bottom: 30, left: 200};
+RankingTypeView.margin    = {top: 30, right: 30, bottom: 30, left: 200};
 var div_RankingTypeView   = document.getElementById("rankingTypeView");
 RankingTypeView.width     = div_RankingTypeView.clientWidth;// 1400,
 RankingTypeView.height    = div_RankingTypeView.clientHeight//5*30;
 RankingTypeView.Graph     = d3.select("#rankingTypeView").append("svg").attr("width", RankingTypeView.width).attr("height", RankingTypeView.height);
 RankingTypeView.num       = 5;
 RankingTypeView.radio     = 8;
+RankingTypeView.NumYears  = 5;
 RankingTypeView.NumberThreshold   = 100;
 
   
@@ -732,7 +740,7 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topname
         .attr("stroke-opacity",1)
         .text(function(){return name.key;});
     
-    var end= yearspopular[yearspopular.length-1].date;
+    /*var end= yearspopular[yearspopular.length-1].date;
     
     RankingTypeView.svg.select('.bumpchart').append("text")
         .attr("x", function(d) { return RankingTypeView.xScale(end)+4; })
@@ -742,7 +750,7 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topname
         .attr("fill",strokeStyle)
         .attr("fill-opacity",1)
         .attr("stroke-opacity",1)
-        .text(function(){return name.key;});
+        .text(function(){return name.key;});*/
       
   });
   
@@ -803,7 +811,7 @@ RankingTypeViewSunBarChart.width  = myDiv_RankingTypeViewSunBarChart.clientWidth
 RankingTypeViewSunBarChart.height = myDiv_RankingTypeViewSunBarChart.clientHeight,
 RankingTypeViewSunBarChart.number = 5;
 
-RankingTypeViewSunBarChart.individualDiv=(myDiv_RankingTypeViewSunBarChart.clientWidth/RankingTypeViewSunBarChart.number);
+RankingTypeViewSunBarChart.individualDiv=(myDiv_RankingTypeViewSunBarChart.clientWidth/RankingTypeViewSunBarChart.number)-2;
 
 
 var arc = d3.arc();
@@ -1062,7 +1070,77 @@ function getElementWithIndex(array1,indexs){
   return respuesta;
 }
 
+function MakeAditionalGraphs(){
+    let Div_CrimeTypeList = document.getElementById("CrimeTypeList");
+    let Div_YearsList     = document.getElementById("YearRankingView");
+    let typeList_height   = GRAPH.dataCrossfilter.SecondCrimeTypes.all().length*20;
+    let years_height      = GRAPH.dataCrossfilter.Years.all().length*20+50;
 
+    AditionalCrimeTypeAddtional
+            .width(Div_CrimeTypeList.clientWidth)
+            .height(typeList_height)
+            .dimension(GRAPH.dataCrossfilter.DimSecondCrimeType)
+            .group(GRAPH.dataCrossfilter.SecondCrimeTypes)
+            .ordering(function(d) { return -d.value })
+            .label(function(d){return d.key.toLowerCase();})
+            .colors(['#71C1B4'])
+            .margins({top: 5, left: 10, right: 15, bottom: 20})
+            .elasticX(true)
+            .labelOffsetY(5)
+            .xAxis().ticks(4);
+
+    AditionalCrimeTypeAddtional.on("filtered", function (chart, filter) {
+        let index=GRAPH.TopSelectedCrimeTypes.indexOf(filter);
+        if(index<0){GRAPH.TopSelectedCrimeTypes.push(filter);}
+        else{GRAPH.TopSelectedCrimeTypes.splice(index,1);}
+    });
+
+    YearRowChartAdditional
+            .width(Div_YearsList.clientWidth)
+            .height(years_height)
+            .dimension(GRAPH.dataCrossfilter.DimSecondYears)
+            .group(GRAPH.dataCrossfilter.Years)
+            .ordering(function(d){return d.key;})
+            .label(function(f){return f.key;})
+            .colors(['#71C1B4'])
+            .margins({top: 5, left: 5, right: 5, bottom: 20})
+            .elasticX(true)
+            .labelOffsetY(5)
+            .xAxis().ticks(4);
+
+    YearRowChartAdditional.on("filtered",function(chart,filter){
+        let index=GRAPH.TopSelectedYears.indexOf(filter);
+        if(index<0){GRAPH.TopSelectedYears.push(filter);}
+        else{GRAPH.TopSelectedYears.splice(index,1);}
+    });
+
+    dc.renderAll();
+
+    GRAPH.TopSelectedYears.forEach(function(f){YearRowChartAdditional.filter(f.key);});
+    GRAPH.TopSelectedCrimeTypes.forEach(function(f){AditionalCrimeTypeAddtional.filter(f.key);});
+    //YearRowChartAdditional  = dc.rowChart("#crimeYearRowChart");
+
+}
+
+function makeDimensions_RowChart(){
+    var RankingTypeViewSunBarChart = {};
+    var myDiv_RankingTypeView      = document.getElementById("CrimeTypeList");
+    let height = csData.CrimeTypes.all().length*20;
+
+       locationChart
+        .width(myDiv_RankingTypeView.clientWidth)
+        .height(height)
+          .dimension(csData.dimCrimeType)
+          .group(csData.CrimeTypes)
+          .ordering(function(d) { return -d.value })
+          .colors(['#6baed6'])
+          .elasticX(true)
+          .labelOffsetY(5)
+          .xAxis().ticks(4);
+
+    dc.renderAll();
+
+}
 /*------------------------ END RANKING TYPE VIEW --------------------------------------*/
 /*-------------------------------------------------------------------------------------*/
 /*------------------------ START MAKING GRAPHS-----------------------------------------*/
@@ -1077,7 +1155,11 @@ function makeGraphs(){
     MakeTemporalCrimeTypeView(TotalData);
     //MakeTemporalSiteView(TotalData);
     
+    MakeAditionalGraphs();
 }
+
+
+
 /*
 function MakeTemporalSiteView(data){
     var temp=d3.nest()
@@ -1095,6 +1177,36 @@ function MakeTemporalSiteView(data){
 }*/
 
 function MakeTemporalCrimeTypeView(data){
+    /*begin pre processing missing values*/
+    let temp=d3.nest()
+            .key(function(f){return f.crimeType;})
+            .key(function(d){return new Date(d.date);})
+            .rollup(function(leaves){return leaves.length}).entries(data);
+
+    array=[];
+  
+    temp.forEach(function(d){
+        csData.time.all().forEach(function(cs){
+           let index=arrayObjectIndexOf_Date(d.values,cs.key,"key") ;
+           if(index<0){
+             array.push({"typeCrime":d.key,"date":cs.key,"value":0});
+           }
+        })
+          d.values.forEach(function(g){
+             array.push({"typeCrime":d.key,"date":new Date(g.key),"value":g.value})
+          })
+    });
+    /* end pre processing missing values*/
+    var topnames = GRAPH.TopSelectedCrimeTypes.slice(0,GRAPH.TopSelectedCrimeTypes.length).map(function(d){return d.key;});
+   
+    array = array.filter(function(d) { return topnames.indexOf(d.typeCrime) > -1;});
+    array.sort(function(a, b) { return a.date - b.date; });
+   
+    CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,array,topnames);
+    CreateSunBarChartTypeView(data,topnames);
+}
+
+function MakeTemporalCrimeTypeView_(data){
     /*begin pre processing missing values*/
     let temp=d3.nest()
             .key(function(f){return f.crimeType;})

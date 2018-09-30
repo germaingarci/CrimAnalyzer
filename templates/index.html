@@ -3,6 +3,7 @@
 {% load static %}
 <head>
   <title>CrimAnalyzer</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <!--leaflet-->
   <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css"/>
@@ -15,6 +16,7 @@
   <link href='http://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
 
   <!-- D3js-->
+   <script src="{% static 'lib/js/crossfilter.js' %}"></script>
   <script src="http://d3js.org/d3.v4.min.js"></script>
   <script src="{% static 'lib/js/gauge.js' %}" type="text/JavaScript"></script>
 
@@ -84,13 +86,13 @@
           <!-- Time Chart --> 
           <div class="col-sm-12">
             <div class="chart-wrapper">
-              <div class="chart-stage" style="height: 420px; ">
+              <div id="geralDiv" class="chart-stage" style="height: 420px; ">
                 <div id="map" style="bottom: 0px;  height: 100%;  left: 0px;  position: absolute;  right: 0px;  top: 0px;  width: 100%;">
                       
                 </div>
                 <div id="color" style="background-color: rgba(255,255,255,0.5);" >
                   
-                </div>
+                </div>        
               </div>
             </div>
           </div>
@@ -145,6 +147,17 @@
         </div>
       </div>
 
+      <div class="col-sm-3"> 
+        <div class="chart-wrapper">
+          <div class="chart-stage">
+            <div id="Total_Cumulative_BarChart" style="height: 150px">
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       
       <div class="col-sm-9"> 
         <div class="chart-wrapper" style="opacity: 1">
@@ -184,21 +197,39 @@
       </div> -->
 
 
-      <div class="col-sm-3"> 
-        <div class="chart-wrapper">
-          <div class="chart-stage">
-            <div id="Total_Cumulative_BarChart" style="height: 150px">
+      
 
+
+      <div class="col-sm-2">
+        <div class="row">
+
+          <!-- Chinese Province -->  
+          <div class="col-sm-12">
+            <div class="chart-wrapper">
+              <div class="chart-title" >
+                Crime Types
+              </div>
+              <div class="chart-stage" style="height: 450px; overflow-y: auto;">
+                <div id="CrimeTypeList"></div>
+              </div>
             </div>
+          </div>
+          <!-- Chinese Province -->  
+        </div>
+      </div>
 
+      <div class="col-sm-1"> 
+        <div class="chart-wrapper">
+          <div class="chart-title" >
+              <a href="updateCrimeTypesChart()">Years</a>
+          </div>
+          <div class="chart-stage">
+            <div id="YearRankingView" style="height: 120px; overflow-y: auto; width: 100%;"></div>
           </div>
         </div>
       </div>
 
-
-
-      
-      <div class="col-sm-12"> 
+      <div class="col-sm-9"> 
         <div class="chart-wrapper">
           <div class="chart-stage">
             <div id="rankingTypeView" style="height: 150px"></div>
@@ -206,7 +237,7 @@
         </div>
       </div>
 
-      <div class="col-sm-12"> 
+      <div class="col-sm-10"> 
         <div class="chart-wrapper">
           <div class="chart-stage">
             <div id="sunBarChart" style="height: 300px"></div>
@@ -270,17 +301,20 @@
   <script src="{% static 'lib/js/jquery.min.js' %}"></script>
   <script src="{% static 'lib/js/bootstrap.min.js' %}"></script>
   <script src="{% static 'lib/js/underscore-min.js' %}"></script>
-  <script src="{% static 'lib/js/crossfilter.js' %}"></script>
-  <!-- <script src="{% static 'lib/js/d3.min.js' %}"></script>
-  <script src="{% static 'lib/js/dc.min.js' %}"></script> -->
-  <script src="{% static 'lib/js/queue.js' %}"></script>
+  
+  <!-- <script src="{% static 'lib/js/d3.min.js' %}"></script> 
+  <script src="{% static 'lib/js/dc.min.js' %}"></script> 
+  <script src="{% static 'lib/js/queue.js' %}"></script>-->
+
+  <script src="{% static 'lib/js/dc.js' %}"></script>
+  
   <!--<script src="{% static 'lib/js/leaflet.js' %}"></script>
   <script src="{% static 'lib/js/leaflet-heat.js' %}"></script> -->
   <script src="{% static 'lib/js/keen.min.js' %}"></script>
 
   <!-- My diagrms-->
-  <script src="{% static 'js/timeSeriesChart.js' %}" type="text/javascript"></script>
-  <script src="{% static 'js/barChart.js' %}" type="text/javascript"></script>
+ <!-- <script src="{% static 'js/timeSeriesChart.js' %}" type="text/javascript"></script>
+  <script src="{% static 'js/barChart.js' %}" type="text/javascript"></script> -->
   <!-- my javascript -->
   <script src="{% static 'js/map.js' %}" type="text/javascript"></script> <!--Map Visualization-->
   <script src="{% static 'js/main.js' %}" type="text/javascript"></script> <!--temporal Data extraction-->

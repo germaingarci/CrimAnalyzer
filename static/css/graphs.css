@@ -69,3 +69,26 @@
         position: relative;
 
     }
+
+/*----------------------------------*/
+#CrimeTypeList text{
+    fill: black;
+}
+
+#YearRankingView text{
+    fill: black;
+}
+
+#YearRankingView .axis text  {
+     font-size: 10px;
+    text-anchor: end !important;
+    transform: rotate(-60deg);
+}
+
+#TotalCumulative{
+     position:absolute;
+     left:0;
+     bottom:0;
+     width: 100%;
+     height: 100%;
+}

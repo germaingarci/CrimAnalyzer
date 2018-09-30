@@ -50,7 +50,7 @@ function crimeDataExtraction(){
        	success 	: function(json) {
        		spinner.stop();
                   TotalData               = json;
-                  TotalData.forEach(function(d){d.date=DiscretizationFunction(GRAPH.dateFmt(d.date));});
+                  TotalData.forEach(function(d){d.date=DiscretizationFunction(GRAPH.dateFmt(d.date));  d.year=d.date.getFullYear();});
              	//Dimensiones	
                 	//csData			= crossfilter(json);
                   csData                = crossfilter(TotalData);
@@ -90,17 +90,29 @@ function crimeDataExtraction(){
                   Data_CumulativeTemporalView_Day     = cloneObject(csData.labelDay.all());
                   Data_CumulativeTemporalView_Period  = cloneObject(csData.labelPeriod.all());
 
+                  /*--------------------ADITIONAL CROSSFILTER -----------------------*/
+                  GRAPH.dataCrossfilter                     =   crossfilter(TotalData);
 
+                  GRAPH.dataCrossfilter.DimSecondCrimeType  =   GRAPH.dataCrossfilter.dimension(function(d){return d["crimeType"];});
+                  GRAPH.dataCrossfilter.SecondCrimeTypes    =   GRAPH.dataCrossfilter.DimSecondCrimeType .group();
 
-             	RenderAll();
-             	document.getElementById("mainButton").disabled=true;
+                  GRAPH.dataCrossfilter.DimSecondYears      =   GRAPH.dataCrossfilter.dimension(function(f){return f.year;});
+                  GRAPH.dataCrossfilter.Years               =   GRAPH.dataCrossfilter.DimSecondYears.group();
+
+                  GRAPH.TopSelectedCrimeTypes               =  csData.CrimeTypes.top(RankingTypeView.num);
+                  GRAPH.TopSelectedYears                    =  GRAPH.dataCrossfilter.Years.top(RankingTypeView.NumYears);
+
+             	    RenderAll();
+             	    document.getElementById("mainButton").disabled=true;
        	}
 	});
 }
 
 function RenderAll(){
       remakeGraph();
-	makeGraphs();
+	    makeGraphs();
+      MakeAditionalGraphs();
+      //functionToAddDivs();
 }
 
 function HotspotDetection(){
@@ -254,4 +266,23 @@ function HotspotDetection(){
 
 function activateButton(){
   document.getElementById("mainButton").disabled=false;
+}
+
+
+function functionToAddDivs(){
+    var div = document.createElement("geralDiv");
+    div.innerHTML =
+        '<div class="col-sm-3">\n'+ 
+        '<div class="chart-wrapper">\n'+ 
+          '<div class="chart-stage">\n'+ 
+            '<div id="Total_Cumulative_BarChart" style="height: 150px; background-color:red;">\n'+ 
+
+            '</div>\n'+ 
+
+          '</div>\n'+ 
+        '</div>\n'+ 
+      '</div>';
+
+    document.body.appendChild(div);
+
 }
