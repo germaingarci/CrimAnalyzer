@@ -1,5 +1,9 @@
 var csData;
 
+var div = d3.select("body").append("div") 
+    .attr("class", "tooltip")       
+    .style("opacity", 0);
+
 var MonthLabels  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var DayLabels    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 var PeriodLabels = ["Mor","Aft","Eve",'Dawn'];

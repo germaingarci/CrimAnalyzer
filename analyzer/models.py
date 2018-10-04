@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import JSONField
@@ -15,7 +16,7 @@ class Setor(models.Model):
         return self.codsetor
 
     class Meta:
-    	db_table	= "crime_setor" 
+    	db_table	= "crime_setor" #"crime_setor" 
 
 class Roubo_Crimes(models.Model):
     codsetor 		= models.CharField(max_length=15)
@@ -23,7 +24,7 @@ class Roubo_Crimes(models.Model):
     tipoCrime		= models.CharField(max_length=100)
 
     class Meta:
-    	db_table	= "crime_roubo_crimes" 
+    	db_table	= "crime_roubo_crimes"#"crime_roubo_crimes" 
 
 class Furto_Crimes(models.Model):
     codsetor 		= models.CharField(max_length=15)
@@ -31,7 +32,7 @@ class Furto_Crimes(models.Model):
     tipoCrime		= models.CharField(max_length=100)
 
     class Meta:
-    	db_table	= "crime_furto_crimes" 
+    	db_table	= "crime_furto_crimes"#"crime_furto_crimes" 
 
 
 class Roubo_VCrimes(models.Model):
@@ -42,4 +43,4 @@ class Roubo_VCrimes(models.Model):
         return self.codsetor
 
     class Meta:
-    	db_table	= "crime_roubo_vcrimes" 
+    	db_table	= "crime_roubo_vcrimes"#"crime_roubo_vcrimes" 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Django settings for crimAnalyzer project.
 
@@ -82,7 +83,7 @@ WSGI_APPLICATION = 'crimAnalyzer.wsgi.application'
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #    }
 #}
-
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -90,6 +91,17 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD':'gegaza',
         'HOST':'localhost',
+        'PORT':5432,
+    }
+}
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'CrimeVis',
+        'USER': 'postgres',
+        'PASSWORD':'gegaza',
+        'HOST':'18.217.21.246',
         'PORT':5432,
     }
 }

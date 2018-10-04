@@ -8,8 +8,15 @@ var DiscretizationFunction;
 var TotalData=[];
 function main(){
 	init();//visualizations inicializations
+  /*eliminar*/
+  GRAPH.codSetorList=codSetorList;
+  SetoresList=SetoresList2;
+  drawLeafletMap(SetoresList);
+  clearMap();
+  /*eliminar*/
 	if(GRAPH.codSetorList.length>0){
-		crimeDataExtraction();
+		//crimeDataExtraction();
+    Additional_crimeDataExtraction();
 		document.getElementById("patterExtraction").disabled = false; //activate Hotspot detection
 	}
 }
@@ -34,6 +41,8 @@ function init(){
       //clean_TemporalSiteView();
       clean_RankingTypeView();
        d3.select('#sunBarChart').selectAll("*").remove();
+        d3.select('#CrimeTypeList').selectAll("*").remove();
+         d3.select('#YearRankingView').selectAll("*").remove();
       cleanDivSelection_CrimeType();
 }
 
@@ -98,9 +107,14 @@ function crimeDataExtraction(){
 
                   GRAPH.dataCrossfilter.DimSecondYears      =   GRAPH.dataCrossfilter.dimension(function(f){return f.year;});
                   GRAPH.dataCrossfilter.Years               =   GRAPH.dataCrossfilter.DimSecondYears.group();
+                  GRAPH.dataCrossfilter.Years.all().sort(function(a,b){return a.key - b.key;});
 
-                  GRAPH.TopSelectedCrimeTypes               =  csData.CrimeTypes.top(RankingTypeView.num);
-                  GRAPH.TopSelectedYears                    =  GRAPH.dataCrossfilter.Years.top(RankingTypeView.NumYears);
+                  GRAPH.TopSelectedCrimeTypes = [];  csData.CrimeTypes.top(RankingTypeView.num).forEach(function(f){GRAPH.TopSelectedCrimeTypes.push(f.key);});
+                  GRAPH.dataCrossfilter.Years.all().forEach(function(f,i){
+                        if(i<=RankingTypeView.NumYears){
+                          GRAPH.TopSelectedYears.push(f.key);
+                        }
+                  });
 
              	    RenderAll();
              	    document.getElementById("mainButton").disabled=true;
@@ -111,8 +125,7 @@ function crimeDataExtraction(){
 function RenderAll(){
       remakeGraph();
 	    makeGraphs();
-      MakeAditionalGraphs();
-      //functionToAddDivs();
+      MakeAdditionalGraphs();
 }
 
 function HotspotDetection(){
@@ -268,21 +281,69 @@ function activateButton(){
   document.getElementById("mainButton").disabled=false;
 }
 
+/*---------------------------------------------------------------------------------*/
+/*-------------------------- ADDITIONAL ------------------------------------------*/
+/*---------------------------------------------------------------------------------*/
+function Additional_crimeDataExtraction(){
+  GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+                  TotalData               = jsonTeste;
+                  TotalData.forEach(function(d){d.date=DiscretizationFunction(GRAPH.dateFmt(d.date));  d.year=d.date.getFullYear();});
+              //Dimensiones 
+                  //csData      = crossfilter(json);
+                  csData                = crossfilter(TotalData);
+                  csData.dimTime        = csData.dimension(function (d) { return d["date"];/*GRAPH.dateFmt(d["date"]);*/ });
+                  csData.dimCode        = csData.dimension(function (d) { return d["code"]; });
+                  csData.dimCrimeType   = csData.dimension(function (d) { return d["crimeType"]; });
 
-function functionToAddDivs(){
-    var div = document.createElement("geralDiv");
-    div.innerHTML =
-        '<div class="col-sm-3">\n'+ 
-        '<div class="chart-wrapper">\n'+ 
-          '<div class="chart-stage">\n'+ 
-            '<div id="Total_Cumulative_BarChart" style="height: 150px; background-color:red;">\n'+ 
+                  //dimensiones labels
+                  csData.dimlabelMonth  = csData.dimension(function (d) { return d["labelMonth"]; });
+                  csData.dimlabelDay    = csData.dimension(function (d) { return d["labelDay"]; });
+                  csData.dimlabelPeriod = csData.dimension(function (d) { return d["labelPeriod"]; });
 
-            '</div>\n'+ 
+                  labelDa   = csData.dimlabelDay.group().order(function(d){
+                      return  DayLabels.indexOf(d["labelDay"]);
+                  });
 
-          '</div>\n'+ 
-        '</div>\n'+ 
-      '</div>';
+                //csData.time       = GRAPH.discretization==1?csData.dimTime.group(d3.timeMonth):csData.dimTime.group(d3.timeDay);
+                  csData.time           = csData.dimTime.group(DiscretizationFunction);
+                  csData.Codes          = csData.dimCode.group();
+                  csData.CrimeTypes     = csData.dimCrimeType.group();
+                  csData.labelMonth     = csData.dimlabelMonth.group();
+                  csData.labelDay       = csData.dimlabelDay.group();
+                  csData.labelPeriod    = csData.dimlabelPeriod.group();
+                
+                  GRAPH.CrimeTypeScale.domain(csData.CrimeTypes.all());
+                //sort by date
+                 /* csData.Codes.all().sort(function(a,b){return GRAPH.codSetorList.indexOf(a.key) - GRAPH.codSetorList.indexOf(b.key);});
+                  csData.labelMonth.all().sort(function(a,b){return MonthLabels.indexOf(a.key)-MonthLabels.indexOf(b.key);});
+                  csData.labelDay.all().sort(function(a,b){return DayLabels.indexOf(a.key)-DayLabels.indexOf(b.key);});
+                  csData.labelPeriod.all().sort(function(a,b){return PeriodLabels.indexOf(a.key)-PeriodLabels.indexOf(b.key);});*/
 
-    document.body.appendChild(div);
 
+                  csData.time.all().sort(function(a, b) { return a.key - b.key; }); 
+                  csData.time.all().forEach(function(d){Data_GlobalTemporalView.push({"key":d.key,"value":d.value})})
+                  //Data_GlobalTemporalView             = cloneObject(csData.time.all());
+                  Data_CumulativeTemporalView_Month   = cloneObject(csData.labelMonth.all());
+                  Data_CumulativeTemporalView_Day     = cloneObject(csData.labelDay.all());
+                  Data_CumulativeTemporalView_Period  = cloneObject(csData.labelPeriod.all());
+
+                  /*--------------------ADITIONAL CROSSFILTER -----------------------*/
+                  GRAPH.dataCrossfilter                     =   crossfilter(TotalData);
+
+                  GRAPH.dataCrossfilter.DimSecondCrimeType  =   GRAPH.dataCrossfilter.dimension(function(d){return d["crimeType"];});
+                  GRAPH.dataCrossfilter.SecondCrimeTypes    =   GRAPH.dataCrossfilter.DimSecondCrimeType .group();
+
+                  GRAPH.dataCrossfilter.DimSecondYears      =   GRAPH.dataCrossfilter.dimension(function(f){return f.year;});
+                  GRAPH.dataCrossfilter.Years               =   GRAPH.dataCrossfilter.DimSecondYears.group();
+                  GRAPH.dataCrossfilter.Years.all().sort(function(a,b){return a.key - b.key;});
+
+                  GRAPH.TopSelectedCrimeTypes = [];  csData.CrimeTypes.top(RankingTypeView.num).forEach(function(f){GRAPH.TopSelectedCrimeTypes.push(f.key);});
+                  GRAPH.dataCrossfilter.Years.all().forEach(function(f,i){
+                        if(i<=RankingTypeView.NumYears){
+                          GRAPH.TopSelectedYears.push(f.key);
+                        }
+                  });
+
+                  RenderAll();
+                  document.getElementById("mainButton").disabled=true;
 }

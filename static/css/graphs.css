@@ -92,3 +92,30 @@
      width: 100%;
      height: 100%;
 }
+
+#CrimeTypeList .y.axisb text{
+    text-transform: lowercase;
+    font-size: 12px;
+
+}
+
+.y.axisb path,
+.y.axisb line{
+    fill:none;
+    stroke: none;
+}
+
+div.tooltip {   
+    position: absolute;         
+    text-align: center;         
+    padding: 2px;               
+    font: 11px sans-serif;      
+    background: lightsteelblue; 
+    border: 0px;        
+    border-radius: 8px;         
+    pointer-events: none;           
+}
+
+.grid{
+    opacity: 0.3;
+}

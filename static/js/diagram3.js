@@ -1,6 +1,8 @@
 var AditionalCrimeTypeAddtional = dc.rowChart("#CrimeTypeList");
 var YearRowChartAdditional  = dc.rowChart("#YearRankingView");
 
+var RowBarChart_CrimeType={};
+var RowBarChart_Years={};
 /*------------------------------------------------------------------------------------*/
 /*                  Global Temporal View*/
 /*------------------------------------------------------------------------------------*/
@@ -159,9 +161,9 @@ function brushmoved(){
          csData.dimTime.filter(selection);
         
         var  inicialDate  = selection[0],
-          endDate = selection[1];
+              endDate     = selection[1];
 
-         array=TotalData.filter(function(d){return (d.date>=inicialDate && d.date<=endDate);});
+          array=TotalData.filter(function(d){return (d.date>=inicialDate && d.date<=endDate);});
           MakeTemporalCrimeTypeView(array);
 
          GRAPH.MinDateSelected=inicialDate;
@@ -197,7 +199,7 @@ var CumulativeTemporalView={};
 //var myDiv_CumulativeTemporalView  = document.getElementById("cumulativeBarChart");
 //CumulativeTemporalView.Graph      = d3.select("#cumulativeBarChart").append("svg").attr("width",myDiv_CumulativeTemporalView.clientWidth);
 
-CumulativeTemporalView.margin     = {top: 10, right: 10, bottom: 30, left: 35};
+CumulativeTemporalView.margin     = {top: 10, right: 10, bottom: 35, left: 35};
 CumulativeTemporalView.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.50//myDiv_CumulativeTemporalView.clientWidth;
 CumulativeTemporalView.height     = myDiv_TotalCumulativeTemporalView.clientHeight;//myDiv_CumulativeTemporalView.clientHeight;
 
@@ -228,8 +230,8 @@ function CumulativeTemporalView_Init(){
 
 function CrearCumulativeTemporalView(group, area, nest){
       var data = nest.map(function(d, i) {return [d.key, d.value];   });
-      innerWidth = CumulativeTemporalView.width - CumulativeTemporalView.margin.right,
-      innerHeight = CumulativeTemporalView.height - CumulativeTemporalView.margin.top - CumulativeTemporalView.margin.bottom,
+      let innerWidth = CumulativeTemporalView.width - CumulativeTemporalView.margin.right,
+      innerHeight = CumulativeTemporalView.height - CumulativeTemporalView.margin.top - CumulativeTemporalView.margin.bottom;
 
 
       //CumulativeTemporalView.xScale.rangeRound([0, innerWidth]).domain(data.map(function(d){return d[0];}));
@@ -334,7 +336,7 @@ var CumulativeTemporalView_Day={};
 //var myDiv_CumulativeTemporalView_Day  = document.getElementById("cumulativeBarChart_Day");
 //CumulativeTemporalView_Day.Graph    = d3.select("#cumulativeBarChart_Day").append("svg").attr("width",myDiv_CumulativeTemporalView_Day.clientWidth);
 
-CumulativeTemporalView_Day.margin     = {top: 10, right: 10, bottom: 30, left: 35};
+CumulativeTemporalView_Day.margin     = {top: 10, right: 10, bottom: 35, left: 35};
 
 CumulativeTemporalView_Day.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.3;//myDiv_CumulativeTemporalView_Day.clientWidth;
 CumulativeTemporalView_Day.height     = myDiv_TotalCumulativeTemporalView.clientHeight;//myDiv_CumulativeTemporalView_Day.clientHeight;
@@ -466,7 +468,7 @@ var CumulativeTemporalView_Period={};
 var myDiv_CumulativeTemporalView_Period  = document.getElementById("cumulativeBarChart_Period");
 //CumulativeTemporalView_Period.Graph    = d3.select("#cumulativeBarChart_Period").append("svg").attr("width",myDiv_CumulativeTemporalView_Period.clientWidth);
 
-CumulativeTemporalView_Period.margin     = {top: 10, right: 10, bottom: 30, left: 35};
+CumulativeTemporalView_Period.margin     = {top: 10, right: 10, bottom: 35, left: 35};
 CumulativeTemporalView_Period.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.2;//myDiv_CumulativeTemporalView_Period.clientWidth;
 CumulativeTemporalView_Period.height     = myDiv_TotalCumulativeTemporalView.clientHeight;//myDiv_CumulativeTemporalView_Period.clientHeight;
 
@@ -474,7 +476,7 @@ CumulativeTemporalView_Period.height     = myDiv_TotalCumulativeTemporalView.cli
 //myDiv_TotalCumulativeTemporalView.clientHeight;//m
 //GlobalCumulativeTemporalView.Graph.
 
-CumulativeTemporalView_Period.xScale = d3.scaleBand().padding(0.2);
+CumulativeTemporalView_Period.xScale = d3.scaleBand().paddingOuter(0.2);
 CumulativeTemporalView_Period.yScale = d3.scaleLinear();
 
 CumulativeTemporalView_Period.svg = GlobalCumulativeTemporalView.Graph.append('g')
@@ -496,8 +498,8 @@ function CumulativeTemporalView_Period_Init(){
 
 function CrearCumulativeTemporalView_Period(group, area, nest){
       var data    = nest.map(function(d, i) {return [d.key, d.value];   });
-      innerWidth  = CumulativeTemporalView_Period.width  -  CumulativeTemporalView_Period.margin.right,
-      innerHeight = CumulativeTemporalView_Period.height - CumulativeTemporalView_Period.margin.top  - CumulativeTemporalView_Period.margin.bottom,
+      let innerWidth  = CumulativeTemporalView_Period.width  -  CumulativeTemporalView_Period.margin.right;
+      let innerHeight = CumulativeTemporalView_Period.height - CumulativeTemporalView_Period.margin.top  - CumulativeTemporalView_Period.margin.bottom;
 
 
       //CumulativeTemporalView_Period.xScale.rangeRound([0, innerWidth]).domain(data.map(function(d){return d[0];}));
@@ -590,7 +592,7 @@ function updateCumulative_Period(data){
 
 var RankingTypeView       = {};
 //RankingTypeView.margin    = {top: 30, right: 200, bottom: 30, left: 200};
-RankingTypeView.margin    = {top: 30, right: 30, bottom: 30, left: 200};
+RankingTypeView.margin    = {top: 30, right: 20, bottom: 30, left: 170};
 var div_RankingTypeView   = document.getElementById("rankingTypeView");
 RankingTypeView.width     = div_RankingTypeView.clientWidth;// 1400,
 RankingTypeView.height    = div_RankingTypeView.clientHeight//5*30;
@@ -630,8 +632,8 @@ function clean_RankingTypeView(){
 
 var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topnames){
   clean_RankingTypeView();
-  var innerWidth    = RankingTypeView.width  - RankingTypeView.margin.right - RankingTypeView.margin.left;
-  var innerHeight   = RankingTypeView.height - RankingTypeView.margin.top   - RankingTypeView.margin.bottom;
+  let innerWidth    = RankingTypeView.width  - RankingTypeView.margin.right - RankingTypeView.margin.left;
+  let innerHeight   = RankingTypeView.height - RankingTypeView.margin.top   - RankingTypeView.margin.bottom;
 
   RankingTypeView.xScale.domain(d3.extent(data, function(d){return d.date;})).range([0, innerWidth]);
   RankingTypeView.yScale = d3.scaleLinear().domain([0,RankingTypeView.num]).range([0,innerHeight])
@@ -738,7 +740,7 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topname
         .attr("fill",strokeStyle)
         .attr("fill-opacity",1)
         .attr("stroke-opacity",1)
-        .text(function(){return name.key;});
+        .text(function(){return name.key.toLowerCase();});
     
     /*var end= yearspopular[yearspopular.length-1].date;
     
@@ -750,7 +752,7 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topname
         .attr("fill",strokeStyle)
         .attr("fill-opacity",1)
         .attr("stroke-opacity",1)
-        .text(function(){return name.key;});*/
+        .text(function(){return name.key.toLowerCase();});*/
       
   });
   
@@ -819,7 +821,7 @@ var p   = Math.PI*2;
 var projection = d3.geoMercator().scale(1);
 var path = d3.geoPath().projection(projection);
 
-RankingTypeViewSunBarChart.Radio        = 100;
+RankingTypeViewSunBarChart.Radio        =  Math.min(RankingTypeViewSunBarChart.individualDiv/3+20,100);//100;
 RankingTypeViewSunBarChart.innerRadius  = 50;
 RankingTypeViewSunBarChart.barHeight    = RankingTypeViewSunBarChart.Radio;
 RankingTypeViewSunBarChart.labelRadius  = RankingTypeViewSunBarChart.barHeight * 1.025;
@@ -834,6 +836,7 @@ function CreateSunBarChartTypeView_Hotspots(misDatos,topnames){
               .key(function(d){return d.labelMonth;})
                 .rollup(function(v){return d3.sum(v,function(d){return d.value;});})
                   .entries(misDatos);
+
 
      //var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.values.length;});})});
      var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.value;});})});
@@ -1070,11 +1073,24 @@ function getElementWithIndex(array1,indexs){
   return respuesta;
 }
 
+function MakeAdditionalGraphs(){
+   RowBarChart_CrimeType=new rowBarChart("CrimeTypeList","value",GRAPH.dataCrossfilter.SecondCrimeTypes.all(),GRAPH.TopSelectedCrimeTypes);
+   RowBarChart_Years=new rowBarChart("YearRankingView","key",GRAPH.dataCrossfilter.Years.all(),GRAPH.TopSelectedYears);
+
+    RowBarChart_CrimeType.DrawGraph();
+   //RowBarChart_Years.margin.right=20;
+   // RowBarChart_Years.margin.left=5;
+    RowBarChart_Years.DrawGraph();
+}
+/*
 function MakeAditionalGraphs(){
     let Div_CrimeTypeList = document.getElementById("CrimeTypeList");
     let Div_YearsList     = document.getElementById("YearRankingView");
     let typeList_height   = GRAPH.dataCrossfilter.SecondCrimeTypes.all().length*20;
     let years_height      = GRAPH.dataCrossfilter.Years.all().length*20+50;
+
+    let temporal_TopSelectedCrimeTypes=cloneObject(GRAPH.TopSelectedCrimeTypes); GRAPH.TopSelectedCrimeTypes=[];
+    let temporal_TopSelectedYears=cloneObject(GRAPH.TopSelectedYears); GRAPH.TopSelectedYears=[];
 
     AditionalCrimeTypeAddtional
             .width(Div_CrimeTypeList.clientWidth)
@@ -1114,14 +1130,15 @@ function MakeAditionalGraphs(){
         else{GRAPH.TopSelectedYears.splice(index,1);}
     });
 
-    dc.renderAll();
+    
 
-    GRAPH.TopSelectedYears.forEach(function(f){YearRowChartAdditional.filter(f.key);});
-    GRAPH.TopSelectedCrimeTypes.forEach(function(f){AditionalCrimeTypeAddtional.filter(f.key);});
+    temporal_TopSelectedCrimeTypes.forEach(function(f){AditionalCrimeTypeAddtional.filter(f);});
+    temporal_TopSelectedYears.forEach(function(f){YearRowChartAdditional.filter(f);});
+    dc.renderAll();
     //YearRowChartAdditional  = dc.rowChart("#crimeYearRowChart");
 
-}
-
+}*/
+/*
 function makeDimensions_RowChart(){
     var RankingTypeViewSunBarChart = {};
     var myDiv_RankingTypeView      = document.getElementById("CrimeTypeList");
@@ -1140,7 +1157,7 @@ function makeDimensions_RowChart(){
 
     dc.renderAll();
 
-}
+}*/
 /*------------------------ END RANKING TYPE VIEW --------------------------------------*/
 /*-------------------------------------------------------------------------------------*/
 /*------------------------ START MAKING GRAPHS-----------------------------------------*/
@@ -1155,7 +1172,7 @@ function makeGraphs(){
     MakeTemporalCrimeTypeView(TotalData);
     //MakeTemporalSiteView(TotalData);
     
-    MakeAditionalGraphs();
+    //MakeAdditionalGraphs();
 }
 
 
@@ -1184,26 +1201,34 @@ function MakeTemporalCrimeTypeView(data){
             .rollup(function(leaves){return leaves.length}).entries(data);
 
     array=[];
-  
+
+    let TemporalDates= d3.set(data.map(function(d) { return d.date; })).values();
     temp.forEach(function(d){
-        csData.time.all().forEach(function(cs){
-           let index=arrayObjectIndexOf_Date(d.values,cs.key,"key") ;
-           if(index<0){
-             array.push({"typeCrime":d.key,"date":cs.key,"value":0});
-           }
-        })
+          //csData.time.all().forEach(function(cs){
+          TemporalDates.forEach(function(c){
+             let cs=new Date(c);
+             let index=arrayObjectIndexOf_Date(d.values,cs,"key") ;
+             if(index<0){
+               array.push({"typeCrime":d.key,"date":cs,"value":0,"year":cs.getFullYear()});
+             }
+          })
           d.values.forEach(function(g){
-             array.push({"typeCrime":d.key,"date":new Date(g.key),"value":g.value})
+             array.push({"typeCrime":d.key,"date":new Date(g.key),"value":g.value,"year":(new Date(g.key)).getFullYear()})
           })
     });
     /* end pre processing missing values*/
-    var topnames = GRAPH.TopSelectedCrimeTypes.slice(0,GRAPH.TopSelectedCrimeTypes.length).map(function(d){return d.key;});
+    var topnames=GRAPH.TopSelectedCrimeTypes;
+    //var topnames = GRAPH.TopSelectedCrimeTypes.slice(0,GRAPH.TopSelectedCrimeTypes.length).map(function(d){return d;});
    
-    array = array.filter(function(d) { return topnames.indexOf(d.typeCrime) > -1;});
+    array = array.filter(function(d) { return ((topnames.indexOf(d.typeCrime) > -1) &&
+                                              (GRAPH.TopSelectedYears.indexOf(d.year) > -1));});
+
+
     array.sort(function(a, b) { return a.date - b.date; });
    
     CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,array,topnames);
-    CreateSunBarChartTypeView(data,topnames);
+
+    CreateSunBarChartTypeView(data.filter(function(d){return GRAPH.TopSelectedYears.indexOf(d.year) > -1;}),topnames);
 }
 
 function MakeTemporalCrimeTypeView_(data){
@@ -1216,12 +1241,12 @@ function MakeTemporalCrimeTypeView_(data){
     array=[];
   
     temp.forEach(function(d){
-        csData.time.all().forEach(function(cs){
-           let index=arrayObjectIndexOf_Date(d.values,cs.key,"key") ;
-           if(index<0){
-             array.push({"typeCrime":d.key,"date":cs.key,"value":0});
-           }
-        })
+          csData.time.all().forEach(function(cs){
+             let index=arrayObjectIndexOf_Date(d.values,cs.key,"key") ;
+             if(index<0){
+               array.push({"typeCrime":d.key,"date":cs.key,"value":0});
+             }
+          })
           d.values.forEach(function(g){
              array.push({"typeCrime":d.key,"date":new Date(g.key),"value":g.value})
           })
@@ -1252,15 +1277,20 @@ function MakeTemporalSiteView_Hotspot(data){
 } */
 
 function MakeTemporalCrimeTypeView_Hotspot(data){
-    let temp=d3.nest()
+    /*let temp=d3.nest()
               .key(function(f){return f.typeCrime;})
               .rollup(function(leaves){return d3.sum(leaves,function(s){return s.value});})
               .entries(data);
   
-    temp.sort(function(a, b) { return b.value-a.value;});
-    var topnames = temp.slice(0,RankingTypeView.num).map(function(d,i) { if(i<RankingTypeView.num){return d.key; }});
+    temp.sort(function(a, b) { return b.value-a.value;});*/
+    //var topnames = temp.slice(0,RankingTypeView.num).map(function(d,i) { if(i<RankingTypeView.num){return d.key; }});
+    //------------------------------------------------------------
 
-    array = data.filter(function(d){return topnames.indexOf(d.typeCrime) > -1;});
+    var topnames=GRAPH.TopSelectedCrimeTypes;
+
+    //array = data.filter(function(d){return topnames.indexOf(d.typeCrime) > -1;});
+    array = data.filter(function(d) { return ((topnames.indexOf(d.typeCrime.toUpperCase()) > -1) &&
+                                              (GRAPH.TopSelectedYears.indexOf(d.date.getFullYear()) > -1));});
 
     CreateRankingTypeView(RankingTypeView.svg,RankingTypeView.svg,array)
     CreateSunBarChartTypeView_Hotspots(array,topnames);
@@ -1269,3 +1299,14 @@ function MakeTemporalCrimeTypeView_Hotspot(data){
 /**********************************************************************************************************/
 /**********************************************************************************************************/
 /**********************************************************************************************************/
+
+function updateCrimeTypesChart(){
+   RankingTypeView.num=GRAPH.TopSelectedCrimeTypes.length;
+   if(GRAPH.HotspotSeleccionado !=undefined && GRAPH.HotspotSeleccionado!=-1){
+      MakeTemporalCrimeTypeView_Hotspot(GRAPH.P_TypesCrimes[GRAPH.HotspotSeleccionado]);
+   }else{
+      MakeTemporalCrimeTypeView(TotalData);
+   }
+   
+   
+}

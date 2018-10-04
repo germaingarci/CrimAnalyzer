@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.conf.urls import include,url
 
 from .views import HomePageView,QueryWith_Marker, setor_selected,crime_Data_Extraction,Get_Hotspots,trend_extraction
