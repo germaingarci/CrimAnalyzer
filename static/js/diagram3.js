@@ -200,7 +200,7 @@ var CumulativeTemporalView={};
 //CumulativeTemporalView.Graph      = d3.select("#cumulativeBarChart").append("svg").attr("width",myDiv_CumulativeTemporalView.clientWidth);
 
 CumulativeTemporalView.margin     = {top: 10, right: 10, bottom: 35, left: 35};
-CumulativeTemporalView.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.50//myDiv_CumulativeTemporalView.clientWidth;
+CumulativeTemporalView.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.51//myDiv_CumulativeTemporalView.clientWidth;
 CumulativeTemporalView.height     = myDiv_TotalCumulativeTemporalView.clientHeight;//myDiv_CumulativeTemporalView.clientHeight;
 
 CumulativeTemporalView.xScale     = d3.scaleBand().padding(0.2);
@@ -338,7 +338,7 @@ var CumulativeTemporalView_Day={};
 
 CumulativeTemporalView_Day.margin     = {top: 10, right: 10, bottom: 35, left: 35};
 
-CumulativeTemporalView_Day.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.3;//myDiv_CumulativeTemporalView_Day.clientWidth;
+CumulativeTemporalView_Day.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.30;//myDiv_CumulativeTemporalView_Day.clientWidth;
 CumulativeTemporalView_Day.height     = myDiv_TotalCumulativeTemporalView.clientHeight;//myDiv_CumulativeTemporalView_Day.clientHeight;
 //myDiv_TotalCumulativeTemporalView.clientWidth*0.40
 //myDiv_TotalCumulativeTemporalView.clientHeight;//m
@@ -346,12 +346,12 @@ CumulativeTemporalView_Day.height     = myDiv_TotalCumulativeTemporalView.client
 CumulativeTemporalView_Day.xScale = d3.scaleBand().padding(0.2);
 CumulativeTemporalView_Day.yScale = d3.scaleLinear();
 
+
 CumulativeTemporalView_Day.svg = GlobalCumulativeTemporalView.Graph.append('g')
                              .attr('class', 'barchart')
-                             //.attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.4+CumulativeTemporalView_Day.margin.left + "," + CumulativeTemporalView_Day.margin.top + ")");
-                             .attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.5+CumulativeTemporalView_Day.margin.left + "," + CumulativeTemporalView_Day.margin.top + ")");
+                             .attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.499+CumulativeTemporalView_Day.margin.left + "," + CumulativeTemporalView_Day.margin.top + ")");
 
-//CumulativeTemporalView_Day.svg.append("rect").attr("x",0).attr("y",0).attr("width",CumulativeTemporalView.width).attr("height",CumulativeTemporalView.height).attr("fill","green").attr("fill-opacity",0.5);
+
 CumulativeTemporalView_Day.svg.append("g").attr("class", "barGraph");
 CumulativeTemporalView_Day.svg.append("g").attr("class", "secondGraph");
 CumulativeTemporalView_Day.svg.append("g").attr("class", "x axis");
@@ -366,8 +366,8 @@ function CumulativeTemporalView_Day_Init(){
 
 function CrearCumulativeTemporalView_Day(group, area, nest){
       var data    = nest.map(function(d, i) {return [d.key, d.value];   });
-      innerWidth  = CumulativeTemporalView_Day.width - CumulativeTemporalView_Day.margin.right,
-      innerHeight = CumulativeTemporalView_Day.height - CumulativeTemporalView_Day.margin.top - CumulativeTemporalView_Day.margin.bottom,
+      let innerWidth  = CumulativeTemporalView_Day.width - CumulativeTemporalView_Day.margin.right;
+      let innerHeight = CumulativeTemporalView_Day.height - CumulativeTemporalView_Day.margin.top - CumulativeTemporalView_Day.margin.bottom;
 
 
       //CumulativeTemporalView_Day.xScale.rangeRound([0, innerWidth]).domain(data.map(function(d){return d[0];}));
@@ -377,7 +377,7 @@ function CrearCumulativeTemporalView_Day(group, area, nest){
 
       CumulativeTemporalView_Day.yScale.rangeRound([innerHeight, 0])
                         .domain([0,d3.max(data, function(d){return d[1];})]);
-
+    // CumulativeTemporalView_Day.svg.append("rect").attr("x",0).attr("y",0).attr("width",innerWidth).attr("height",innerHeight).attr("fill","green").attr("fill-opacity",0.5);
       CumulativeTemporalView_Day.svg.select(".x.axis")
             .attr("transform", "translate(0," + innerHeight + ")")
             .call(d3.axisBottom(CumulativeTemporalView_Day.xScale))
@@ -469,7 +469,7 @@ var myDiv_CumulativeTemporalView_Period  = document.getElementById("cumulativeBa
 //CumulativeTemporalView_Period.Graph    = d3.select("#cumulativeBarChart_Period").append("svg").attr("width",myDiv_CumulativeTemporalView_Period.clientWidth);
 
 CumulativeTemporalView_Period.margin     = {top: 10, right: 10, bottom: 35, left: 35};
-CumulativeTemporalView_Period.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.2;//myDiv_CumulativeTemporalView_Period.clientWidth;
+CumulativeTemporalView_Period.width      = myDiv_TotalCumulativeTemporalView.clientWidth*0.21;//myDiv_CumulativeTemporalView_Period.clientWidth;
 CumulativeTemporalView_Period.height     = myDiv_TotalCumulativeTemporalView.clientHeight;//myDiv_CumulativeTemporalView_Period.clientHeight;
 
 //myDiv_TotalCumulativeTemporalView.clientWidth*0.40
@@ -481,7 +481,7 @@ CumulativeTemporalView_Period.yScale = d3.scaleLinear();
 
 CumulativeTemporalView_Period.svg = GlobalCumulativeTemporalView.Graph.append('g')
                              .attr('class', 'barchart')
-                             .attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.8+CumulativeTemporalView_Period.margin.left + "," + CumulativeTemporalView_Period.margin.top + ")");
+                             .attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.799+CumulativeTemporalView_Period.margin.left + "," + CumulativeTemporalView_Period.margin.top + ")");
 
 //CumulativeTemporalView_Period.svg.append("rect").attr("x",0).attr("y",0).attr("width",CumulativeTemporalView_Period.width).attr("height",CumulativeTemporalView_Period.height).attr("fill","orange").attr("fill-opacity",0.5);;
 CumulativeTemporalView_Period.svg.append("g").attr("class", "barGraph");
