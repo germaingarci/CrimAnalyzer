@@ -18,6 +18,8 @@ import calendar
 import statsmodels.api as sm
 import numpy as np
 import math
+import networkx as nx
+
 ################################
 
 # Create your views here.
@@ -30,6 +32,67 @@ def QueryWith_Marker(request):
     pnt 				= Point(lng,lat)
     setores				= serialize('geojson',Setor.objects.filter(geom__contains=pnt))
     return HttpResponse(json.dumps(setores),content_type='application/json')
+def function_setor_Selected(request):
+    lats                = json.loads(request.GET.get('lats'))
+    longs               = json.loads(request.GET.get('longs'))
+    MaxNumberOfNodes    = 300
+
+    pos                 = GetPolygonWithArrays(lats,longs)
+    poly                = GEOSGeometry(pos)
+    Listasetores        = list(Setor.objects.filter().only('codsetor','x','y','graph'))
+
+    sele                = []
+    for ili in Listasetores:
+        pnt             = Point(ili.y,ili.x)
+        if (poly.contains(pnt)):
+            sele.append(float(ili.idE))
+
+    if(len(sele)>MaxNumberOfNodes):
+        return HttpResponse(json.dumps('error'),content_type='application/json')
+    else:
+        return setor_selected_Intermedio(sele)
+
+def setor_selected_Intermedio(sele):
+    #setores = serialize('geojson',Setor.objects.filter(idE__in=sele).only('idE','codsetor','x','y','geom','graph','nom_mu','nom_di'))
+    setores = serialize('geojson',Setor.objects.filter(idE__in=sele).only('idE','codsetor','x','y','geom','nom_mu','nom_di'))
+    return HttpResponse(json.dumps(setores),content_type='application/json')
+
+def setor_selected_Optimized(request):
+    lats                = json.loads(request.GET.get('lats'))
+    longs               = json.loads(request.GET.get('longs'))
+    MaxNumberOfNodes    = 50#int(request.GET.get('maxNodes'))
+
+    pos                 = GetPolygonWithArrays(lats,longs)
+    poly                = GEOSGeometry(pos)
+    Listasetores        = list(Setor.objects.filter().only('codsetor','x','y','graph'))
+
+    filteredCodes=[]
+    filterr=[]
+    G=nx.Graph()
+
+    for ili in Listasetores:
+        pnt = Point(ili.y,ili.x)
+        if (poly.contains(pnt)):
+            G.add_node(ili.codsetor)
+            filteredCodes.append(ili.codsetor)
+            filterr.append(ili)
+
+    for ili in filterr:
+        coords = ili.graph.split(',')
+        for cor in coords:
+            if(cor.strip() in filteredCodes):
+                G.add_edge(ili.codsetor,cor.strip())
+    
+    while(len(G.nodes())>MaxNumberOfNodes):
+        minimo=min(list(G.degree().values()))
+        remove = [node for node,degree in G.degree().items() if degree == minimo]
+        for n in remove:
+            G.remove_node(n)
+            if(len(G.nodes())<=MaxNumberOfNodes):
+                break
+    setores= serialize('geojson',Setor.objects.filter(codsetor__in=G.nodes()).only('codsetor','x','y','geom','nom_mu','nom_di'))
+    return HttpResponse(json.dumps(setores),content_type='application/json')
+
 
 def setor_selected(request):
     lats 				= json.loads(request.GET.get('lats'))
@@ -43,8 +106,9 @@ def setor_selected(request):
         pnt 			= Point(ili.y,ili.x)
         if (poly.contains(pnt)):
             sele.append(float(ili.idE))
-    setores 			= serialize('geojson',Setor.objects.filter(idE__in=sele).only('idE','codsetor','x','y','geom'))
+    setores 			= serialize('geojson',Setor.objects.filter(idE__in=sele).only('idE','codsetor','x','y','geom','graph','nom_mu','nom_di'))
     return HttpResponse(json.dumps(setores),content_type='application/json')
+
 
 def crime_Data_Extraction(request):
 

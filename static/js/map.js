@@ -58,7 +58,7 @@ var spinner = new Spinner(opts);
 /*---------------------- MAP ------------------------------*/
 var MAP={};
 var OpenMapSurfer_Roads = L.tileLayer('https://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
-    maxZoom: 20,
+    maxZoom: 22,
     attribution: 'Imagery from <a href="http://giscience.uni-hd.de/">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
 
@@ -91,8 +91,10 @@ MAP.baseLayers = {"CartoDB_Positron":CartoDB_Positron,
 const map = new L.Map('map', {
     layers: [CartoDB_Positron],//[Hydda_Full],//[CartoDB_Positron],
     center: new L.LatLng(-23.548682,-46.634731), //centro do Sao Paulo
-    zoom: 12,
+    zoom: 13,
 });
+
+
 
 
 const drawnItems = new L.FeatureGroup();
@@ -116,8 +118,25 @@ const drawControl = new L.Control.Draw({
   },
 });
 
+const provider= new window.GeoSearch.GoogleProvider({params: { key: 'AIzaSyDigZ5WMPoTj_gnkUn3p1waYPDa5oE8WOw', } })
+const searchControl = new window.GeoSearch.GeoSearchControl({ provider: provider,
 
+                                                             style: 'bar',
+                                                             autoComplete: true,             // optional: true|false  - default true
+                                                              autoCompleteDelay: 250,
+                                                              showMarker: false,                                   // optional: true|false  - default true
+                                                              showPopup: false,                                   // optional: true|false  - default false
+                                                              autoClose: true,                                   // optional: true|false  - default false
+                                                              searchLabel: 'Enter address',                       // optional: string      - default 'Enter address'
+                                                              keepResult: false                                   // optional: true|false  - default false
+
+                                                              });
+
+map.addControl(searchControl);
 map.addControl(drawControl);
+//L.control.layers(searchControl, drawControl).addTo(map);
+
+
 L.control.groupedLayers(MAP.baseLayers, MAP.groupedOverlays,drawControl).addTo(map);
 
 map.on('draw:created', (e) => {
@@ -148,6 +167,9 @@ map.on('draw:bufferstart', (e) => { //modify the style of map layers
     }
 });
 
+var tooltip = d3.select("#map").append("div").attr("class", "tooltipother hidden");
+
+
 map.on('draw:buffered', (e) => {
     spinner.spin(GRAPH.target);
     GRAPH.codSetorList   = [];
@@ -158,31 +180,39 @@ map.on('draw:buffered', (e) => {
     poly2.forEach(function(d){
                   points.push({x:parseFloat(d.lat),y:parseFloat(d.lng)});
                   });
-    //Simple=simplify(points,0.0001); //reduce number of poinys
-    for (var i = 0; i < points.length; i++) {
-        //lats.push(Simple[i].x);longs.push(Simple[i].y);
-        lats.push(points[i].x); longs.push(points[i].y);
+    Simple=simplify(points,0.0001); //reduce number of poinys
+    //for (var i = 0; i < points.length; i++) {
+    for (var i = 0; i < Simple.length; i++) {
+        lats.push(Simple[i].x);longs.push(Simple[i].y);
+        //lats.push(points[i].x); longs.push(points[i].y);
     }
 
     $.ajax({
         data:{'lats':JSON.stringify(lats),'longs':JSON.stringify(longs)},
-        url : '/setor_selected/',
+        //url : '/setor_selected/',
+        url : '/function_setor_Selected/',
         type: 'get',
         dataType : 'json',
         success : function(json) {
             spinner.stop();
-            SetoresList = JSON.parse(json);
-            clearAll();
-            SetoresList['features'].forEach(function(d){  
-                GRAPH.codSetorList.push(d.properties['codsetor']);
-                d.properties.numcrimens=0.5; });
-            drawLeafletMap(SetoresList);
-            clearMap();
+            if(json=="error"){}
+              else{
+                    SetoresList = JSON.parse(json);
+                    clearAll();
+                    SetoresList['features'].forEach(function(d){  
+                        GRAPH.codSetorList.push(d.properties['codsetor']);
+                        d.properties.numcrimens=0.5; });
+                    drawLeafletMap(SetoresList);
+                    clearMap();
+            }
         }
     });
 
 });
-
+/*
+var WW=document.getElementById('map');
+var offsetL = document.getElementById('map').offsetLeft+((WW.offsetWidth-60)/2)+40;
+var offsetT =document.getElementById('map').offsetTop+(((WW.offsetWidth-60)/2)/2)+20;*/
 
 function drawLeafletMap(geoShape){
  
@@ -205,7 +235,7 @@ function drawLeafletMap(geoShape){
     d3_features = g.selectAll("path")
                   .data(geoShape.features)
                   .enter().append("path");
-
+                  
     map.on("viewreset", reset);
     reset();
     // fit the SVG element to leaflet's map layer
@@ -213,6 +243,8 @@ function drawLeafletMap(geoShape){
         bounds          = path.bounds(geoShape);
         var topLeft     = bounds[0],
         bottomRight     = bounds[1];
+
+        
 
         svgMap.attr("width", bottomRight[0] - topLeft[0])
               .attr("height", bottomRight[1] - topLeft[1])
@@ -248,6 +280,21 @@ function drawLeafletMap(geoShape){
           .attr('stroke','#3D4A57')
           .attr('stroke-width',1.5)
           .attr("stroke-linecap", "round")
+          .on("mousemove", function(d,i) {
+             let f=d.properties.numcrimens<1?"-":d.properties.numcrimens;
+              //var mouse = d3.mouse(svgMap.node()).map( function(d) { return parseInt(d); } );
+           
+                tooltip
+                  .classed("hidden", false)
+                  .attr("style", "left:"+(d3.event.pageX-80)+"px;top:"+(d3.event.pageY-100)+"px")
+                  .html("<center><b>"+d.properties.codsetor+"</b></center>"+
+                        "<hr> <b>Nom_mu:</b> "+d.properties.nom_mu+
+                        "<hr> <b>Nom_mu:</b> "+d.properties.nom_di+
+                        "<hr> <b>Num.Crimes:</b> "+f);
+              })
+              .on("mouseout",  function(d,i) {
+                tooltip.classed("hidden", true)
+              })
           /*.on("click",function(d){
                      d3.selectAll(".clicked")
                           .classed("clicked", false)
@@ -303,6 +350,7 @@ function QueryWithMarker(lat,lng){
         type: 'get',
         dataType : 'json',
         success : function(json) {
+
           var myjson      = JSON.parse(json);
           points          =[];
           (myjson.features[0].geometry.coordinates[0][0]).forEach(function(d,i){
@@ -363,6 +411,7 @@ function DrawColorPalette(){
     var colorScheme   = GRAPH.ColorPaletterName//"interpolateYlOrBr";
     var width         = 200;
     var widthLegend   = 20;
+    var widthNumCrimes = 12;
     var heightPalette = 190;
 
     var colorMapLegend = d3.scaleSequential()
@@ -384,21 +433,33 @@ function DrawColorPalette(){
     var yAxis = d3.axisRight()
       .ticks(numTicks)
       .scale(y);
+
+    svgColor.append("text")
+      .attr("fill", "#3D4A57")          // <=== Set the fill
+      .style("font-family","pacific")
+      .style("text-anchor", "middle")
+      .attr("y", 10)
+      .attr("x",-100)
+      .attr("transform", "rotate(-90)")
+      .text("Number of Crimes");
+
     svgColor.append("g")
         .attr("class", "y axis")
-        .attr("transform", "translate("+widthLegend/2+"," + 5  + ")")
+        .attr("transform", "translate("+((widthLegend/2)+12)+"," + 5  + ")")
         .call(yAxis)            
 
     svgColor.selectAll(".bars")
         .append("g")
+        .attr("transform","translate(10,0)")
         .data(d3.range(heightPalette), function(d) { return d; })                    
         .enter().append("rect")
             .attr("class", "bars")
-            .attr("x", -1)
+            .attr("x", 12)
             .attr("y", function(d, i) { return heightPalette-i+4; })
             .attr("height", 1)
             .attr("width", widthLegend/2)
             .style("fill", function(d, i ) { return colorMapLegend(d); })
+
 }
 
 //when a census block was clicked
@@ -662,6 +723,16 @@ function DrawIndividualHotspots(states){
             var yAxis = d3.axisRight()
               .ticks(numTicks)
               .scale(y);   
+            svgCol.append("text")
+            .attr("fill", "gray")          // <=== Set the fill
+            .style("font-family","pacific")
+            .style("text-anchor", "middle")
+            .style("text-size", "10px")
+            .attr("y", 57)
+            .attr("x",-60)
+            .attr("transform", "rotate(-90)")
+            .text("Number of Crimes");
+
             svgCol.append("g")
                 .attr("class", "y axis")
                 .attr("transform", "translate("+widthLegend/2+"," + 5  + ")")

@@ -23,10 +23,9 @@ def DynamicSignalExtraction(sitesList,dataset):
 		listOfCrimes=list(Furto_Crimes.objects.filter(codsetor__in  = sitesList))
 
 	resultado=[]
-
 	for row in listOfCrimes:
 		date 	= datetime.strptime(str(row.data),formato_fecha)	#get crime date
-		temp 	= row.tipoCrime 									#get crime type
+		temp 	= str(row.tipoCrime) 									#get crime type
 		temp 	= ' '.join(temp.split())							#crime type name cleaning
 		[nameMonth,nameDay,periodDay]=GetLabelofDate(date)
 		resultado.append({'code':row.codsetor,'date':date.strftime("%d-%m-%Y %H:%M:%S"), 'crimeType':temp,'labelMonth':nameMonth,'labelDay':nameDay,'labelPeriod':periodDay})

@@ -4,14 +4,17 @@ function rowBarChart(divName,values,data,topNames){
 	HorizontalBarChart.svg = d3.select('#'+divName).append("svg");
 	HorizontalBarChart.svg.append("g").attr("class", "grid");
 	HorizontalBarChart.svg.append("g").attr("class", "secondGraph");
-	HorizontalBarChart.svg.append("g").attr("class", "x axis");
+	HorizontalBarChart.svg.append("g").attr("class", "x axisb");
 	HorizontalBarChart.svg.append("g").attr("class", "y axisb");
 	HorizontalBarChart.svg.append("g").attr("class", "barGraph");
 
-	HorizontalBarChart.margin = {"top":5,"left":2,"right":2,"bottom":30};
+	HorizontalBarChart.margin = {"top":5,"left":10,"right":10,"bottom":30};
 	let elementoDiv = document.getElementById(divName);
 	HorizontalBarChart.height = elementoDiv.clientHeight;
 	HorizontalBarChart.width  = elementoDiv.clientWidth;
+	console.log(elementoDiv.clientWidth);
+	console.log(divName);
+
 	HorizontalBarChart.xScale = d3.scaleLinear();//.range([0, elementoDiv.clientWidth]);
 	HorizontalBarChart.yScale = d3.scaleBand().padding(0.25);
 
@@ -19,19 +22,23 @@ function rowBarChart(divName,values,data,topNames){
 		data.sort(function(a,b){return b[values]-a[values]});
 		HorizontalBarChart.height =  data.length*20+20 ;
 
-		let innerWidth  = HorizontalBarChart.width-HorizontalBarChart.margin.left - HorizontalBarChart.margin.right;
-		let innerHeight = HorizontalBarChart.height-HorizontalBarChart.margin.top - HorizontalBarChart.margin.bottom;
+		
 
 		HorizontalBarChart.svg.attr("height",HorizontalBarChart.height);
 		HorizontalBarChart.svg.attr("width",HorizontalBarChart.width);
 
-		HorizontalBarChart.xScale.range([HorizontalBarChart.margin.left,innerWidth]).domain([0,d3.max(data,function(d){return d.value;})]);
-		HorizontalBarChart.yScale.range([HorizontalBarChart.margin.top,innerHeight]).domain(data.map(function(r){return r.key;}));
+		let innerWidth  = HorizontalBarChart.width-HorizontalBarChart.margin.left - HorizontalBarChart.margin.right;
+		let innerHeight = HorizontalBarChart.height-HorizontalBarChart.margin.top - HorizontalBarChart.margin.bottom;
+
+		//HorizontalBarChart.svg.append("rect").attr("x",0).attr("y",0).attr("width",innerWidth).attr("height",innerHeight).attr("fill","none").attr("stroke","red");
+
+		HorizontalBarChart.xScale.range([0,innerWidth]).domain([0,d3.max(data,function(d){return d.value;})]);
+		HorizontalBarChart.yScale.range([0,innerHeight]).domain(data.map(function(r){return r.key;}));
 
 		
 		 HorizontalBarChart.svg.select(".grid")			
 	      .attr("class", "grid")
-	      .attr("transform", "translate(0," + innerHeight + ")")
+	      .attr("transform", "translate("+HorizontalBarChart.margin.left+"," + innerHeight + ")")
 	      .call(HorizontalBarChart.make_x_gridlines()
 	          .tickSize(-innerHeight)
 	          .tickFormat("")
@@ -41,7 +48,8 @@ function rowBarChart(divName,values,data,topNames){
 		bars=HorizontalBarChart.svg.select(".barGraph")
 						  .append("g")
 						  .attr("width",innerWidth)
-						  .attr("height",innerHeight);
+						  .attr("height",innerHeight)
+						  .attr("transform","translate("+HorizontalBarChart.margin.left+","+HorizontalBarChart.margin.top+")")
 
 		//bars.append("rect").attr("x",0).attr("y",0).attr("width",innerWidth).attr("height",innerHeight).attr("stroke","red");
 
@@ -106,17 +114,17 @@ function rowBarChart(divName,values,data,topNames){
 
         HorizontalBarChart.svg.select(".y.axisb")
             .attr("class", "y axisb")
-            .attr("transform","translate("+HorizontalBarChart.margin.left+",0)")
+            .attr("transform","translate("+HorizontalBarChart.margin.left+","+HorizontalBarChart.margin.top+")")
             .call(yAxis);
 
         /*HorizontalBarChart.svg.selectAll(".y.axis .tick")
 				.on("click", function(d) {  console.log(d);})
 		;*/
 
-        let xAxis = d3.axisBottom(HorizontalBarChart.xScale).ticks(4);
+        let xAxis = d3.axisBottom(HorizontalBarChart.xScale).ticks(5);
 
-        HorizontalBarChart.svg.select(".x.axis")
-        	.attr("transform", "translate(0," + innerHeight + ")")
+        HorizontalBarChart.svg.select(".x.axisb")
+        	.attr("transform", "translate("+HorizontalBarChart.margin.left+"," + innerHeight + ")")
         	.call(xAxis)
         	.selectAll("text")	
         .style("text-anchor", "end")

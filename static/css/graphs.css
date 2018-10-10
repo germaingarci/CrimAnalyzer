@@ -75,6 +75,10 @@
     fill: black;
 }
 
+#YearRankingView{
+    width: 100%;
+    margin: 0px auto;
+}
 #YearRankingView text{
     fill: black;
 }
@@ -119,3 +123,37 @@ div.tooltip {
 .grid{
     opacity: 0.3;
 }
+
+
+/*-----------------------*/
+.hidden { 
+  display: none; 
+}
+
+div.tooltipother {
+  color: #222; 
+  background: #fff; 
+  padding: .5em; 
+  /*text-shadow: #f5f5f5 0 1px 0;*/
+  border-radius: 6px; 
+  box-shadow: 0px 0px 2px 0px #a6a6a6; 
+  opacity: 0.9; 
+  position: relative;
+  display: inline-block;
+  border-color: black;
+}
+/*
+div.tooltipother::after {
+    content: '';
+    bottom: 100%;
+    left: 50%;
+    border: solid transparent;
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-color: transparent transparent black transparent;
+    border-width: 10px;
+    margin-left: -10px;
+
+}*/

@@ -1,3 +1,9 @@
+ 
+  /*
+  $('#alertid').fadeIn(1000);
+   setTimeout(function() { 
+       $('#alertid').fadeOut(1000); 
+   }, 5000);*/
 /*parameters*/
 var Data_GlobalTemporalView;
 var Data_CumulativeLabels={"Month":[],"Day":[],"Period":[]};
@@ -16,8 +22,8 @@ function main(){
   /*eliminar*/
 	if(GRAPH.codSetorList.length>0){
 		//crimeDataExtraction();
-    Additional_crimeDataExtraction();
-		document.getElementById("patterExtraction").disabled = false; //activate Hotspot detection
+   Additional_crimeDataExtraction();
+		//document.getElementById("patterExtraction").disabled = false; //activate Hotspot detection
 	}
 }
 
@@ -287,7 +293,8 @@ function activateButton(){
 function Additional_crimeDataExtraction(){
   GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
                   TotalData               = jsonTeste;
-                  TotalData.forEach(function(d){d.date=DiscretizationFunction(GRAPH.dateFmt(d.date));  d.year=d.date.getFullYear();});
+                  //TotalData.forEach(function(d){d.date=DiscretizationFunction(GRAPH.dateFmt(d.date));  d.year=d.date.getFullYear();});
+                  TotalData.forEach(function(d){d.date=new Date(d.date);  d.year=d.date.getFullYear();});
               //Dimensiones 
                   //csData      = crossfilter(json);
                   csData                = crossfilter(TotalData);

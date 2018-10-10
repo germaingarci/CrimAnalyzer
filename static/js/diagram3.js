@@ -1,5 +1,5 @@
-var AditionalCrimeTypeAddtional = dc.rowChart("#CrimeTypeList");
-var YearRowChartAdditional  = dc.rowChart("#YearRankingView");
+//var AditionalCrimeTypeAddtional = dc.rowChart("#CrimeTypeList");
+//var YearRowChartAdditional  = dc.rowChart("#YearRankingView");
 
 var RowBarChart_CrimeType={};
 var RowBarChart_Years={};
@@ -154,6 +154,7 @@ function brushmoved(){
         GRAPH.MinDateSelected="";
         GRAPH.MaxDateSelected="";
         remakeGraph();
+        return;
     } // Ignore empty selections.
     var selection = d3.event.selection.map(GlobalTemporalView.xScale.invert);
 
@@ -230,8 +231,8 @@ function CumulativeTemporalView_Init(){
 
 function CrearCumulativeTemporalView(group, area, nest){
       var data = nest.map(function(d, i) {return [d.key, d.value];   });
-      let innerWidth = CumulativeTemporalView.width - CumulativeTemporalView.margin.right,
-      innerHeight = CumulativeTemporalView.height - CumulativeTemporalView.margin.top - CumulativeTemporalView.margin.bottom;
+      let  innerWidth = CumulativeTemporalView.width - CumulativeTemporalView.margin.right;
+      let innerHeight = CumulativeTemporalView.height - CumulativeTemporalView.margin.top - CumulativeTemporalView.margin.bottom;
 
 
       //CumulativeTemporalView.xScale.rangeRound([0, innerWidth]).domain(data.map(function(d){return d[0];}));
@@ -293,8 +294,10 @@ function CrearCumulativeTemporalView(group, area, nest){
 
 var updateCumulativeView = function updateCumulativeView(group, area, nest) {
     var data = nest.map(function(d, i) {
-           return [d.key, d.value-10];
+           return [d.key, d.value];
       }); 
+    let  innerWidth = CumulativeTemporalView.width - CumulativeTemporalView.margin.right;
+    let innerHeight = CumulativeTemporalView.height - CumulativeTemporalView.margin.top - CumulativeTemporalView.margin.bottom;
 
     CumulativeTemporalView.svg.select(".secondGraph").selectAll('bars')
                 .data(data)
@@ -428,8 +431,12 @@ function CrearCumulativeTemporalView_Day(group, area, nest){
 
 var updateCumulativeView_Day = function updateCumulativeView_Day(group, area, nest) {
     var data = nest.map(function(d, i) {
-           return [d.key, d.value-10];
+           return [d.key, d.value];
       }); 
+
+     let innerWidth  = CumulativeTemporalView_Day.width - CumulativeTemporalView_Day.margin.right;
+      let innerHeight = CumulativeTemporalView_Day.height - CumulativeTemporalView_Day.margin.top - CumulativeTemporalView_Day.margin.bottom;
+
 
     CumulativeTemporalView_Day.svg.select(".secondGraph").selectAll('bars')
                 .data(data)
@@ -481,7 +488,7 @@ CumulativeTemporalView_Period.yScale = d3.scaleLinear();
 
 CumulativeTemporalView_Period.svg = GlobalCumulativeTemporalView.Graph.append('g')
                              .attr('class', 'barchart')
-                             .attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.799+CumulativeTemporalView_Period.margin.left + "," + CumulativeTemporalView_Period.margin.top + ")");
+                             .attr("transform", "translate(" + myDiv_TotalCumulativeTemporalView.clientWidth*0.81+CumulativeTemporalView_Period.margin.left + "," + CumulativeTemporalView_Period.margin.top + ")");
 
 //CumulativeTemporalView_Period.svg.append("rect").attr("x",0).attr("y",0).attr("width",CumulativeTemporalView_Period.width).attr("height",CumulativeTemporalView_Period.height).attr("fill","orange").attr("fill-opacity",0.5);;
 CumulativeTemporalView_Period.svg.append("g").attr("class", "barGraph");
@@ -555,8 +562,12 @@ function CrearCumulativeTemporalView_Period(group, area, nest){
 
 var updateCumulativeView_Period = function updateCumulativeView_Period(group, area, nest) {
     var data = nest.map(function(d, i) {
-           return [d.key, d.value-10];
+           return [d.key, d.value];
       }); 
+
+      let innerWidth  = CumulativeTemporalView_Period.width  -  CumulativeTemporalView_Period.margin.right;
+      let innerHeight = CumulativeTemporalView_Period.height - CumulativeTemporalView_Period.margin.top  - CumulativeTemporalView_Period.margin.bottom;
+
 
     CumulativeTemporalView_Period.svg.select(".secondGraph").selectAll('bars')
                 .data(data)
@@ -592,7 +603,7 @@ function updateCumulative_Period(data){
 
 var RankingTypeView       = {};
 //RankingTypeView.margin    = {top: 30, right: 200, bottom: 30, left: 200};
-RankingTypeView.margin    = {top: 30, right: 20, bottom: 30, left: 170};
+RankingTypeView.margin    = {top: 30, right: 20, bottom: 30, left: 135};
 var div_RankingTypeView   = document.getElementById("rankingTypeView");
 RankingTypeView.width     = div_RankingTypeView.clientWidth;// 1400,
 RankingTypeView.height    = div_RankingTypeView.clientHeight//5*30;
@@ -675,7 +686,8 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topname
      }
   /*----------------------------------------------------*/
 
-  RankingTypeView.radioScale.domain(d3.extent(data, function(d){return d.value;})).range([1,RankingTypeView.radio])
+  //RankingTypeView.radioScale.domain(d3.extent(data, function(d){return d.value;})).range([1,RankingTypeView.radio])
+  RankingTypeView.radioScale.domain([0,d3.max(data, function(d){return d.value;})]).range([1,RankingTypeView.radio])
   
   var byYear={};
   var intermedio=d3.nest()
@@ -740,7 +752,7 @@ var CreateRankingTypeView=function CreateRankingTypeView(group,area,data,topname
         .attr("fill",strokeStyle)
         .attr("fill-opacity",1)
         .attr("stroke-opacity",1)
-        .text(function(){return name.key.toLowerCase();});
+        .text(function(){return name.key;});
     
     /*var end= yearspopular[yearspopular.length-1].date;
     
@@ -1074,13 +1086,16 @@ function getElementWithIndex(array1,indexs){
 }
 
 function MakeAdditionalGraphs(){
-   RowBarChart_CrimeType=new rowBarChart("CrimeTypeList","value",GRAPH.dataCrossfilter.SecondCrimeTypes.all(),GRAPH.TopSelectedCrimeTypes);
    RowBarChart_Years=new rowBarChart("YearRankingView","key",GRAPH.dataCrossfilter.Years.all(),GRAPH.TopSelectedYears);
+   RowBarChart_CrimeType=new rowBarChart("CrimeTypeList","value",GRAPH.dataCrossfilter.SecondCrimeTypes.all(),GRAPH.TopSelectedCrimeTypes);
+   
+
+   RowBarChart_Years.DrawGraph();
 
     RowBarChart_CrimeType.DrawGraph();
-   //RowBarChart_Years.margin.right=20;
+   // RowBarChart_Years.margin.right=20;
    // RowBarChart_Years.margin.left=5;
-    RowBarChart_Years.DrawGraph();
+    
 }
 /*
 function MakeAditionalGraphs(){

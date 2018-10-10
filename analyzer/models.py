@@ -10,6 +10,9 @@ class Setor(models.Model):
     codsetor 		= models.CharField(max_length=15)
     x 				= models.FloatField()
     y 				= models.FloatField()
+    graph           = models.CharField(max_length=750)
+    nom_mu          = models.CharField(max_length=32)
+    nom_di          = models.CharField(max_length=38)
     geom 			= models.MultiPolygonField(srid=4326)
 
     def __unicode__(self):
@@ -21,6 +24,7 @@ class Setor(models.Model):
 class Roubo_Crimes(models.Model):
     codsetor 		= models.CharField(max_length=15)
     data			= models.DateTimeField()
+    nomeCrime       = models.CharField(max_length=100)
     tipoCrime		= models.CharField(max_length=100)
 
     class Meta:
@@ -29,6 +33,7 @@ class Roubo_Crimes(models.Model):
 class Furto_Crimes(models.Model):
     codsetor 		= models.CharField(max_length=15)
     data			= models.DateTimeField()
+    nomeCrime       = models.CharField(max_length=100)
     tipoCrime		= models.CharField(max_length=100)
 
     class Meta:
@@ -38,6 +43,7 @@ class Furto_Crimes(models.Model):
 class Roubo_VCrimes(models.Model):
     codsetor 		= models.CharField(max_length=15)
     data			= models.DateTimeField()
+    nomeCrime       = models.CharField(max_length=100)
     tipoCrime		= models.CharField(max_length=100)
     def __unicode__(self):
         return self.codsetor
