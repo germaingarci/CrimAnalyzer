@@ -1,4 +1,4 @@
- 
+
   /*
   $('#alertid').fadeIn(1000);
    setTimeout(function() { 
@@ -15,14 +15,14 @@ var TotalData=[];
 function main(){
 	init();//visualizations inicializations
   /*eliminar*/
-  GRAPH.codSetorList=codSetorList;
+  /*GRAPH.codSetorList=codSetorList;
   SetoresList=SetoresList2;
   drawLeafletMap(SetoresList);
-  clearMap();
+  clearMap();*/
   /*eliminar*/
 	if(GRAPH.codSetorList.length>0){
-		//crimeDataExtraction();
-   Additional_crimeDataExtraction();
+		crimeDataExtraction();
+    //Additional_crimeDataExtraction();
 		//document.getElementById("patterExtraction").disabled = false; //activate Hotspot detection
 	}
 }
@@ -54,7 +54,9 @@ function init(){
 
 //extraction of crime data
 function crimeDataExtraction(){
-  GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+  if(GRAPH.scaleCenter==undefined){
+      GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+  }
 
 	spinner.spin(GRAPH.target);
 	$.ajax({
@@ -291,7 +293,9 @@ function activateButton(){
 /*-------------------------- ADDITIONAL ------------------------------------------*/
 /*---------------------------------------------------------------------------------*/
 function Additional_crimeDataExtraction(){
-  GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+  if(GRAPH.scaleCenter==undefined){
+      GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+  }
                   TotalData               = jsonTeste;
                   //TotalData.forEach(function(d){d.date=DiscretizationFunction(GRAPH.dateFmt(d.date));  d.year=d.date.getFullYear();});
                   TotalData.forEach(function(d){d.date=new Date(d.date);  d.year=d.date.getFullYear();});

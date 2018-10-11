@@ -284,11 +284,21 @@ function CrearCumulativeTemporalView(group, area, nest){
                 .attr("height", function(d) { 
                     return innerHeight+0.5 - CumulativeTemporalView.yScale(d[1]); 
                   })
-                .attr("class","barTemporalSerie");
-                //.attr("fill","none")
-                //.attr("stroke","grey");
-              //.on("mouseover", onMouseOver)
-              //.on("mouseout", onMouseOut);
+                .attr("class","barTemporalSerie")
+                 .on("mouseover", function(d){
+                        div.transition()    
+                        .duration(200)    
+                        .style("opacity", .9);
+
+                        div.html(d[0]+ " : "  + d[1]) 
+                          .style("left", (d3.event.pageX) + "px")   
+                          .style("top", (d3.event.pageY ) + "px");
+                  })
+                  .on("mouseout", function(d){
+                      div.transition()    
+                      .duration(500)    
+                      .style("opacity", 0);
+                  });
 
 }
 
@@ -313,9 +323,21 @@ var updateCumulativeView = function updateCumulativeView(group, area, nest) {
                 .attr("width", CumulativeTemporalView.xScale.bandwidth())
                 .attr("height", function(d) { 
                       return innerHeight+0.5 - CumulativeTemporalView.yScale(d[1]); 
+                  })
+                .on("mouseover", function(d){
+                        div.transition()    
+                        .duration(200)    
+                        .style("opacity", .9);
+
+                        div.html("Overlap - "+d[0]+ " : "  + d[1]) 
+                          .style("left", (d3.event.pageX) + "px")   
+                          .style("top", (d3.event.pageY ) + "px");
+                  })
+                  .on("mouseout", function(d){
+                      div.transition()    
+                      .duration(500)    
+                      .style("opacity", 0);
                   });
-                //.attr("fill","green")
-                //.attr("stroke","black");
 }
 
 var updateCumulativeViewRemove = function updateCumulativeViewRemove(){
@@ -421,11 +443,21 @@ function CrearCumulativeTemporalView_Day(group, area, nest){
                 .attr("height", function(d) { 
                     return innerHeight+0.5 - CumulativeTemporalView_Day.yScale(d[1]); 
                   })
-                .attr("class","barTemporalSerie");
-                //.attr("fill","none")
-                //.attr("stroke","grey");
-              //.on("mouseover", onMouseOver)
-              //.on("mouseout", onMouseOut);
+                .attr("class","barTemporalSerie")
+                .on("mouseover", function(d){
+                        div.transition()    
+                        .duration(200)    
+                        .style("opacity", .9);
+
+                        div.html(d[0]+ " : "  + d[1]) 
+                          .style("left", (d3.event.pageX) + "px")   
+                          .style("top", (d3.event.pageY ) + "px");
+                  })
+                  .on("mouseout", function(d){
+                      div.transition()    
+                      .duration(500)    
+                      .style("opacity", 0);
+                  });
 
 }
 
@@ -452,6 +484,20 @@ var updateCumulativeView_Day = function updateCumulativeView_Day(group, area, ne
                 .attr("width", CumulativeTemporalView_Day.xScale.bandwidth())
                 .attr("height", function(d) { 
                       return innerHeight+0.5 - CumulativeTemporalView_Day.yScale(d[1]); 
+                  })
+                .on("mouseover", function(d){
+                        div.transition()    
+                        .duration(200)    
+                        .style("opacity", .9);
+
+                        div.html("Overlap - "+d[0]+ " : "  + d[1]) 
+                          .style("left", (d3.event.pageX) + "px")   
+                          .style("top", (d3.event.pageY ) + "px");
+                  })
+                  .on("mouseout", function(d){
+                      div.transition()    
+                      .duration(500)    
+                      .style("opacity", 0);
                   });
 }
 
@@ -557,7 +603,21 @@ function CrearCumulativeTemporalView_Period(group, area, nest){
                 .attr("height", function(d) { 
                     return innerHeight+0.5 - CumulativeTemporalView_Period.yScale(d[1]); 
                   })
-                .attr("class","barTemporalSerie");
+                .attr("class","barTemporalSerie")
+                .on("mouseover", function(d){
+                        div.transition()    
+                        .duration(200)    
+                        .style("opacity", .9);
+
+                        div.html(d[0]+ " : "  + d[1]) 
+                          .style("left", (d3.event.pageX) + "px")   
+                          .style("top", (d3.event.pageY ) + "px");
+                  })
+                  .on("mouseout", function(d){
+                      div.transition()    
+                      .duration(500)    
+                      .style("opacity", 0);
+                  });
 }
 
 var updateCumulativeView_Period = function updateCumulativeView_Period(group, area, nest) {
@@ -583,6 +643,20 @@ var updateCumulativeView_Period = function updateCumulativeView_Period(group, ar
                 .attr("width", CumulativeTemporalView_Period.xScale.bandwidth())
                 .attr("height", function(d) { 
                       return innerHeight+0.5 - CumulativeTemporalView_Period.yScale(d[1]); 
+                  })
+                .on("mouseover", function(d){
+                        div.transition()    
+                        .duration(200)    
+                        .style("opacity", .9);
+
+                        div.html("Overlap - "+d[0]+ " : "  + d[1]) 
+                          .style("left", (d3.event.pageX) + "px")   
+                          .style("top", (d3.event.pageY ) + "px");
+                  })
+                  .on("mouseout", function(d){
+                      div.transition()    
+                      .duration(500)    
+                      .style("opacity", 0);
                   });
 }
 
@@ -830,8 +904,8 @@ RankingTypeViewSunBarChart.individualDiv=(myDiv_RankingTypeViewSunBarChart.clien
 
 var arc = d3.arc();
 var p   = Math.PI*2;
-var projection = d3.geoMercator().scale(1);
-var path = d3.geoPath().projection(projection);
+var projection2 = d3.geoMercator().scale(1);
+var path = d3.geoPath().projection(projection2);
 
 RankingTypeViewSunBarChart.Radio        =  Math.min(RankingTypeViewSunBarChart.individualDiv/3+20,100);//100;
 RankingTypeViewSunBarChart.innerRadius  = 50;
@@ -916,7 +990,7 @@ function CreateSunBarChartTypeView(misDatos,topnames){
         sumTotal+=d.sumatoria;
     });
 
-    projection.scale(GRAPH.scaleCenter.scale)
+    projection2.scale(GRAPH.scaleCenter.scale)
       .center(GRAPH.scaleCenter.center)
       .translate([RankingTypeViewSunBarChart.innerRadius , RankingTypeViewSunBarChart.innerRadius ]);
 
@@ -945,7 +1019,7 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
 
   function createSunChart(wrapper,da,states,color,temp1,codeCrimeTypeScale,hotspot,sumTotal){
           wrapper.append('p')
-                 .text(da.key.toLowerCase())
+                 .text(da.key)
                  .style("color",color)
                  .attr("fill-opacity",1)
                  .attr('class', 'legend');

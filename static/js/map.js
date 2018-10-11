@@ -132,9 +132,47 @@ const searchControl = new window.GeoSearch.GeoSearchControl({ provider: provider
 
                                                               });
 
+var stateChangingButton = L.easyButton({
+    states: [{
+            stateName: 'Tutorial to Selection',        // name the state
+            icon:      'glyphicon glyphicon-facetime-video',               // and define its properties
+            title:     'Tutorial to Selection',      // like its title
+            onClick: function(btn, map) {       // and its callback
+               $("#myModal").modal();
+            }
+        }]
+});
+
+stateChangingButton.addTo(map );
+
+
+/*var customControl =  L.Control.extend({
+
+  options: {
+    position: 'topleft'
+  },
+
+  onAdd: function (map) {
+    var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+ 
+    container.style.backgroundColor = 'white';
+    container.style.width = '30px';
+    container.style.height = '30px';
+    container.style.backgroundImage = "url(https://t1.gstatic.com/images?q=tbn:ANd9GcR6FCUMW5bPn8C4PbKak2BJQQsmC-K9-mbYBeFZm1ZM2w2GRy40Ew)";
+    container.style.backgroundSize = "30px 30px";
+    container.onclick = function(){
+      console.log('buttonClicked');
+    }
+    return container;
+  }
+});
+
+map.addControl(new customControl());*/
+
 map.addControl(searchControl);
 map.addControl(drawControl);
 //L.control.layers(searchControl, drawControl).addTo(map);
+
 
 
 L.control.groupedLayers(MAP.baseLayers, MAP.groupedOverlays,drawControl).addTo(map);
@@ -171,6 +209,7 @@ var tooltip = d3.select("#map").append("div").attr("class", "tooltipother hidden
 
 
 map.on('draw:buffered', (e) => {
+    document.getElementById("alertid").style.display = "none";
     spinner.spin(GRAPH.target);
     GRAPH.codSetorList   = [];
     var lats             = [],
@@ -195,8 +234,11 @@ map.on('draw:buffered', (e) => {
         dataType : 'json',
         success : function(json) {
             spinner.stop();
-            if(json=="error"){}
+            if(json=="error"){
+                document.getElementById("alertid").style.display = "block";
+            }
               else{
+                 document.getElementById("alertid").style.display = "none";
                     SetoresList = JSON.parse(json);
                     clearAll();
                     SetoresList['features'].forEach(function(d){  

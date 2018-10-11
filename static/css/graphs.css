@@ -111,13 +111,15 @@
 
 div.tooltip {   
     position: absolute;         
-    text-align: center;         
+    text-align: center; 
+    color :#fff;      
     padding: 2px;               
     font: 11px sans-serif;      
-    background: lightsteelblue; 
+    background: #000; 
     border: 0px;        
-    border-radius: 8px;         
-    pointer-events: none;           
+    border-radius: 5px;         
+    pointer-events: none;  
+    opacity: 0.7;         
 }
 
 .grid{

@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'crimAnalyzer.wsgi.application'
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #    }
 #}
-
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -105,7 +105,7 @@ DATABASES = {
         'PORT':5432,
     }
 }
-'''
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -143,6 +143,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
 
 STATICFILES_DIRS =(
     os.path.join(BASE_DIR,'static'),
