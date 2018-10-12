@@ -5,7 +5,7 @@ import time
 import csv
 django.setup()
 from .models import Roubo_Crimes,Furto_Crimes,Roubo_VCrimes,Setor
-
+from django.contrib.gis.geos import GEOSGeometry,Point
 
 def run_roubo_crimes_remove():
 	crimetypes=['ROUBO CONSUMADO - OUTROS','ROUBO TENTADO - OUTROS','ROUBO  CONSUMADO - OUTROS','ROUBO+LESAO GRAVE-OUTROS']
@@ -85,3 +85,10 @@ def Put_AdditionalInformationSetor():
 			lista.append(row)
 	for ind in lista:
 		Setor.objects.filter(codsetor=ind[0]).update(nom_mu=ind[1],nom_di=ind[2])
+
+def teste():
+	Listasetores        = list(Setor.objects.filter().only('idE','x','y'))
+	for se in Listasetores:
+		lng=se.y
+		lat=se.x
+		Setor.objects.filter(idE=se.idE).update(center=Point(lng,lat))

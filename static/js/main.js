@@ -126,6 +126,7 @@ function crimeDataExtraction(){
 
              	    RenderAll();
              	    document.getElementById("mainButton").disabled=true;
+                  HotspotDetection();
        	}
 	});
 }

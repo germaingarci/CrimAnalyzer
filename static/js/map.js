@@ -1,3 +1,4 @@
+
 var csData;
 
 var div = d3.select("body").append("div") 
@@ -209,7 +210,8 @@ var tooltip = d3.select("#map").append("div").attr("class", "tooltipother hidden
 
 
 map.on('draw:buffered', (e) => {
-    document.getElementById("alertid").style.display = "none";
+    //document.getElementById("alertid").style.display = "none";
+    $('#alertid').hide();
     spinner.spin(GRAPH.target);
     GRAPH.codSetorList   = [];
     var lats             = [],
@@ -225,20 +227,23 @@ map.on('draw:buffered', (e) => {
         lats.push(Simple[i].x);longs.push(Simple[i].y);
         //lats.push(points[i].x); longs.push(points[i].y);
     }
-
+    let MaxNumberOfSites=180;
     $.ajax({
-        data:{'lats':JSON.stringify(lats),'longs':JSON.stringify(longs)},
-        //url : '/setor_selected/',
-        url : '/function_setor_Selected/',
+        /*data:{'lats':JSON.stringify(lats),'longs':JSON.stringify(longs)},*/
+        url : '/setor_selected/',
+        data:{'lats':JSON.stringify(lats),'longs':JSON.stringify(longs),'MaxNumberSites':MaxNumberOfSites},
+        //url : '/function_setor_Selected/',
         type: 'get',
         dataType : 'json',
         success : function(json) {
             spinner.stop();
-            if(json=="error"){
-                document.getElementById("alertid").style.display = "block";
+            if(json.message!=undefined){
+                $('#alertid').show().html("<strong>Danger!</strong> You selected <strong>"+json.total+"</strong> sites. You should select less than <strong>"+MaxNumberOfSites+"</strong>.")
+                //document.getElementById("alertid").style.display = "block";
             }
               else{
-                 document.getElementById("alertid").style.display = "none";
+                    //document.getElementById("alertid").style.display = "none";
+                    $('#alertid').hide();
                     SetoresList = JSON.parse(json);
                     clearAll();
                     SetoresList['features'].forEach(function(d){  
@@ -404,9 +409,9 @@ function QueryWithMarker(lat,lng){
     });
 }
 
-
+/*
 function HotspotDetection(){
-}
+}*/
 
 function deleteElementsOfMap() {
     for(i in map._layers) {
