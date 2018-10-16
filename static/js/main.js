@@ -13,6 +13,7 @@ var Data_CumulativeTemporalView_Period;
 var DiscretizationFunction;
 var TotalData=[];
 function main(){
+  $('#alertid').hide("fade");
 	init();//visualizations inicializations
   /*eliminar*/
   /*GRAPH.codSetorList=codSetorList;
@@ -28,7 +29,7 @@ function main(){
 }
 
 function init(){
-	GRAPH.discretization             = parseInt(document.getElementById("TypeDiscretization").value);
+	    GRAPH.discretization             = parseInt(document.getElementById("TypeDiscretization").value);
       GRAPH.numberOfHotspots       = parseInt(document.getElementById("numberOfHotspots").value); //number of patterns
       d3.select('#patternDiv').selectAll("*").remove();
       GRAPH.patterns               = {};
@@ -37,26 +38,30 @@ function init(){
       TotalData                    = [];
       Data_CumulativeLabels        = {"Month":[],"Day":[],"Period":[]};
       GRAPH.dataset = document.getElementById("dataset").value;
-
+      GRAPH.ListOfCrimeTypesCons = [];
       //Chart Initialization
+      ChartsInitialization();
+      GRAPH.TopSelectedCrimeTypes = []; 
+      GRAPH.TopSelectedYears = [];
+}
+
+function ChartsInitialization(){
       GlobalTemporalView_Init();
       CumulativeTemporalView_Init();
       CumulativeTemporalView_Day_Init();
       CumulativeTemporalView_Period_Init();
-      //CleanTemporalTypeView();
-      //clean_TemporalSiteView();
       clean_RankingTypeView();
-       d3.select('#sunBarChart').selectAll("*").remove();
-        d3.select('#CrimeTypeList').selectAll("*").remove();
-         d3.select('#YearRankingView').selectAll("*").remove();
+      d3.select('#sunBarChart').selectAll("*").remove();
+      d3.select('#CrimeTypeList').selectAll("*").remove();
+      d3.select('#YearRankingView').selectAll("*").remove();
       cleanDivSelection_CrimeType();
 }
 
 //extraction of crime data
 function crimeDataExtraction(){
-  if(GRAPH.scaleCenter==undefined){
-      GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
-  }
+ // if(GRAPH.scaleCenter_Star==undefined){
+     // GRAPH.scaleCenter_Star = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+  //}
 
 	spinner.spin(GRAPH.target);
 	$.ajax({
@@ -91,8 +96,11 @@ function crimeDataExtraction(){
                   csData.labelMonth 		= csData.dimlabelMonth.group();
                   csData.labelDay 		  = csData.dimlabelDay.group();
                   csData.labelPeriod 		= csData.dimlabelPeriod.group();
-             		
+             		 
+                  csData.CrimeTypes.all().sort(function(a, b) { return a.value - b.value; });
                   GRAPH.CrimeTypeScale.domain(csData.CrimeTypes.all());
+                  csData.CrimeTypes.all().forEach(function(d){GRAPH.ListOfCrimeTypesCons.push(d.key);})
+                  
              		//sort by date
                  /* csData.Codes.all().sort(function(a,b){return GRAPH.codSetorList.indexOf(a.key) - GRAPH.codSetorList.indexOf(b.key);});
                   csData.labelMonth.all().sort(function(a,b){return MonthLabels.indexOf(a.key)-MonthLabels.indexOf(b.key);});
@@ -117,12 +125,15 @@ function crimeDataExtraction(){
                   GRAPH.dataCrossfilter.Years               =   GRAPH.dataCrossfilter.DimSecondYears.group();
                   GRAPH.dataCrossfilter.Years.all().sort(function(a,b){return a.key - b.key;});
 
-                  GRAPH.TopSelectedCrimeTypes = [];  csData.CrimeTypes.top(RankingTypeView.num).forEach(function(f){GRAPH.TopSelectedCrimeTypes.push(f.key);});
-                  GRAPH.dataCrossfilter.Years.all().forEach(function(f,i){
-                        if(i<=RankingTypeView.NumYears){
-                          GRAPH.TopSelectedYears.push(f.key);
-                        }
-                  });
+                  
+                  if(GRAPH.TopSelectedCrimeTypes.length==0 &&GRAPH.TopSelectedYears.length==0 ){
+                      csData.CrimeTypes.top(RankingTypeView.num).forEach(function(f){GRAPH.TopSelectedCrimeTypes.push(f.key);});
+                      GRAPH.dataCrossfilter.Years.all().forEach(function(f,i){
+                            if(i<=RankingTypeView.NumYears){
+                              GRAPH.TopSelectedYears.push(f.key);
+                            }
+                      });
+                  }
 
              	    RenderAll();
              	    document.getElementById("mainButton").disabled=true;
@@ -294,9 +305,9 @@ function activateButton(){
 /*-------------------------- ADDITIONAL ------------------------------------------*/
 /*---------------------------------------------------------------------------------*/
 function Additional_crimeDataExtraction(){
-  if(GRAPH.scaleCenter==undefined){
-      GRAPH.scaleCenter = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
-  }
+  //if(GRAPH.scaleCenter==undefined){
+      GRAPH.scaleCenter_Star = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+  //}
                   TotalData               = jsonTeste;
                   //TotalData.forEach(function(d){d.date=DiscretizationFunction(GRAPH.dateFmt(d.date));  d.year=d.date.getFullYear();});
                   TotalData.forEach(function(d){d.date=new Date(d.date);  d.year=d.date.getFullYear();});
@@ -359,3 +370,89 @@ function Additional_crimeDataExtraction(){
                   RenderAll();
                   document.getElementById("mainButton").disabled=true;
 }
+
+function DownLoadData(){
+    if(GRAPH.codSetorList.length>0){
+        objeto={
+            "bufferedPolygon":GRAPH.bufferedPolygon,
+            "codSetorList":GRAPH.codSetorList,
+            "selectedCrimeType":GRAPH.selectedCrimeType,
+            "selectedSite":GRAPH.selectedSite,
+            "TopSelectedYears":GRAPH.TopSelectedYears,
+            "TopSelectedCrimeTypes":GRAPH.TopSelectedCrimeTypes,
+            "dataset":GRAPH.dataset,
+            "numberOfHotspots":GRAPH.numberOfHotspots,
+            "SetoresList":SetoresList,
+        };
+     downloadObjectAsJson(objeto, "CrimAnalyzer_Data.json");
+  }
+}
+
+$(document).ready(function() {
+    $('#fileInput').change(function(e) {
+        files= this.files;
+        var reader = new FileReader();
+        reader.onload = onReaderLoad;
+        reader.readAsText(files[0]);
+    });
+});
+
+function onReaderLoad(event){
+    spinner.spin(GRAPH.target);
+    var obj = JSON.parse(event.target.result);
+    init();
+    clearMap();
+    /*------------------MAP RECUPERATION----------------------*/
+    options={clickable: true,dashArray: "1, 10",fill: true,fillColor: null,fillOpacity: 0.2,lineCap: null,lineJoin: null,noClip: false,
+              opacity: 0.5,color: '#0033ff',smoothFactor: 1,stroke: true,weight: 5 };
+    var polygon = new L.Polygon(obj.bufferedPolygon, options);
+    drawnItems.addLayer(polygon);
+    map.addLayer(polygon); 
+    /*------------------MAP RECUPERATION----------------------*/
+    GRAPH.codSetorList = obj.codSetorList;
+    GRAPH.selectedCrimeType =  obj.selectedCrimeType;
+    GRAPH.selectedSite = obj.selectedSite;
+    GRAPH.TopSelectedYears = obj.TopSelectedYears;
+    GRAPH.TopSelectedCrimeTypes = obj.TopSelectedCrimeTypes;
+    GRAPH.dataset = obj.dataset;
+    GRAPH.numberOfHotspots = obj.numberOfHotspots; 
+    SetoresList = obj.SetoresList;
+    
+    /*------------------- draw refered--------------*/
+    spinner.stop();
+    drawLeafletMap(SetoresList);
+    clearMap();
+    GRAPH.scaleCenter_Star=undefined;
+    document.getElementById("mainButton").disabled=false;
+
+    /*------------------- Crime extraction --------------*/
+    if(GRAPH.codSetorList.length>0){
+      crimeDataExtraction();
+    }
+   
+}
+
+
+/*
+buffer points
+crimesites codes
+selectedCrimeType
+selectedSite
+TypeDiscretization
+GRAPH.dataset 
+
+
+GRAPH.discretization             = parseInt(document.getElementById("TypeDiscretization").value);
+      GRAPH.numberOfHotspots       = parseInt(document.getElementById("numberOfHotspots").value); //number of patterns
+      d3.select('#patternDiv').selectAll("*").remove();
+      GRAPH.patterns               = {};
+      DiscretizationFunction       = GRAPH.discretization==1?d3.timeMonth:d3.timeDay;
+      Data_GlobalTemporalView      = new Array();
+      TotalData                    = [];
+      Data_CumulativeLabels        = {"Month":[],"Day":[],"Period":[]};
+      GRAPH.dataset = document.getElementById("dataset").value;
+      GRAPH.ListOfCrimeTypesCons = [];
+      //Chart Initialization
+      ChartsInitialization();
+
+*/

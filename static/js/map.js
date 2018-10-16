@@ -1,4 +1,4 @@
-
+//$('#alertid').show('fade').html("You selected a too larger region. We shorten your search.");
 var csData;
 
 var div = d3.select("body").append("div") 
@@ -23,6 +23,7 @@ var GRAPH={};
     GRAPH.ordinalMonthScale   = d3.scaleOrdinal().domain(MonthLabels).range([1,2,3,4,5,6,7,8,9,10,11, 12]);
     GRAPH.TopSelectedCrimeTypes = [];
     GRAPH.TopSelectedYears      = [];
+    GRAPH.ListOfCrimeTypesCons = [];
 
  GRAPH.CrimeTypeScale = d3.scaleOrdinal()
     //.range(["#DB7F85", "#50AB84", "#4C6C86", "#C47DCB", "#B59248", "#DD6CA7", "#E15E5A", "#5DA5B3", "#725D82", "#54AF52", "#954D56", "#8C92E8", "#D8597D", "#AB9C27", "#D67D4B", "#D58323", "#BA89AD", "#357468", "#8F86C2", "#7D9E33", "#517C3F", "#9D5130", "#5E9ACF", "#776327", "#944F7E"]);
@@ -64,12 +65,6 @@ var OpenMapSurfer_Roads = L.tileLayer('https://korona.geog.uni-heidelberg.de/til
 });
 
 /*Outdoors*/
-var Thunderforest_Outdoors = L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey={apikey}', {
-  attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  apikey: '<your apikey>',
-  maxZoom: 22
-});
-
 var Hydda_Full = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -83,16 +78,16 @@ var CartoDB_Positron = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fast
 });
 
 
-
-MAP.baseLayers = {"CartoDB_Positron":CartoDB_Positron,
-                  "Hydda_Full": Hydda_Full,
-                  "Thunder":Thunderforest_Outdoors,
-                  "Open_Roads":OpenMapSurfer_Roads}
-
+MAP.baseLayers = { "<div class='layers-control-img'><img src= 'https://b.basemaps.cartocdn.com/light_all/13/4093/2724.png'></div> CartoDB_Positron":CartoDB_Positron,
+                  "<div class='layers-control-img'><img src= 'http://b.tile.openstreetmap.se/hydda/full/14/7974/6325.png' ></div> Hydda_Full": Hydda_Full,
+                  "<div class='layers-control-img'><img src= 'https://wiki.openstreetmap.org/w/images/thumb/8/82/MSN_Roads.png/340px-MSN_Roads.png'></div> Open_Roads":OpenMapSurfer_Roads}
+//https://www.ovrdc.org/apps/assets/images/layer-control-images/cartodb.png
 const map = new L.Map('map', {
+    
     layers: [CartoDB_Positron],//[Hydda_Full],//[CartoDB_Positron],
     center: new L.LatLng(-23.548682,-46.634731), //centro do Sao Paulo
     zoom: 13,
+    
 });
 
 
@@ -100,6 +95,8 @@ const map = new L.Map('map', {
 
 const drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
+
+
 
 const drawControl = new L.Control.Draw({
   position: 'topleft',
@@ -115,23 +112,47 @@ const drawControl = new L.Control.Draw({
   edit: {
       featureGroup: drawnItems,
       remove: true,
-      buffer: {replacePolylines: false,separateBuffer: false}
+      buffer: {replacePolylines: false,
+               separateBuffer: false}
   },
+ 
 });
 
-const provider= new window.GeoSearch.GoogleProvider({params: { key: 'AIzaSyDigZ5WMPoTj_gnkUn3p1waYPDa5oE8WOw', } })
-const searchControl = new window.GeoSearch.GeoSearchControl({ provider: provider,
+const provider= new window.GeoSearch.GoogleProvider({params: { key: 'AIzaSyDigZ5WMPoTj_gnkUn3p1waYPDa5oE8WOw', } });
 
-                                                             style: 'bar',
-                                                             autoComplete: true,             // optional: true|false  - default true
+/*
+provider.GetLocations( addressText, function ( data ) {
+  // in data are your results with x, y, label and bounds (currently availabel for google maps provider only)
+});*/
+
+const searchControl = new window.GeoSearch.GeoSearchControl({ provider: provider,                                                               
+                                                              style: 'bar',
+                                                              autoComplete: true,             // optional: true|false  - default true
                                                               autoCompleteDelay: 250,
                                                               showMarker: false,                                   // optional: true|false  - default true
-                                                              showPopup: false,                                   // optional: true|false  - default false
+                                                              showPopup: false,  
+                                                              marker: {                                           // optional: L.Marker    - default L.Icon.Default
+                                                                icon: new L.Icon.Default(),
+                                                                draggable: true,
+                                                              },   // optional: true|false  - default false
                                                               autoClose: true,                                   // optional: true|false  - default false
                                                               searchLabel: 'Enter address',                       // optional: string      - default 'Enter address'
-                                                              keepResult: false                                   // optional: true|false  - default false
-
+                                                              keepResult: false,                                   // optional: true|false  - default false
+                                                              animateZoom: true,
+                                                              keepResult: true
                                                               });
+ map.on('geosearch/results', function(data){
+    /*results.clearLayers();
+    for (var i = data.results.length - 1; i >= 0; i--) {
+      results.addLayer(L.marker(data.results[i].latlng));
+    }*/
+  });
+
+map.on('geosearch/showlocation', function(e){
+      deleteElementsOfMap();
+      marker=L.circleMarker([e.location.y,e.location.x],{color: 'red',radius:10});
+      marker.addTo(map);
+});
 
 var stateChangingButton = L.easyButton({
     states: [{
@@ -140,12 +161,14 @@ var stateChangingButton = L.easyButton({
             title:     'Tutorial to Selection',      // like its title
             onClick: function(btn, map) {       // and its callback
                $("#myModal").modal();
-            }
-        }]
+            },
+        } ]        
 });
 
-stateChangingButton.addTo(map );
+map.addControl(new L.Control.Fullscreen());
 
+
+stateChangingButton.addTo(map);
 
 /*var customControl =  L.Control.extend({
 
@@ -176,28 +199,30 @@ map.addControl(drawControl);
 
 
 
+
 L.control.groupedLayers(MAP.baseLayers, MAP.groupedOverlays,drawControl).addTo(map);
 
 map.on('draw:created', (e) => {
-
      const {layerType, layer } = e;
      drawnItems.addLayer(layer);
-      var type = e.layerType;
+     var type = e.layerType;
      if(type=='marker'){
         marker=e;
         QueryWithMarker(e.layer._latlng.lat,e.layer._latlng.lng);
         drawnItems.removeLayer(e.layer);
         map.removeLayer(e.layer);
+        deleteElementsOfMap();
      }
 });
 
 var marker;
 map.on('draw:drawstart',(e)=>{
    var type = e.layerType;
-   deleteElementsOfMap();
+   //deleteElementsOfMap();
 });
 
 map.on('draw:bufferstart', (e) => { //modify the style of map layers
+
     for(i in map._layers) {
         if(map._layers[i]._path != undefined) {
             d3.select(map.getPanes().overlayPane).selectAll("#mapdiv").remove();
@@ -208,16 +233,34 @@ map.on('draw:bufferstart', (e) => { //modify the style of map layers
 
 var tooltip = d3.select("#map").append("div").attr("class", "tooltipother hidden");
 
-
 map.on('draw:buffered', (e) => {
-    //document.getElementById("alertid").style.display = "none";
-    $('#alertid').hide();
+    //clean Graphs
+    ChartsInitialization();
+    d3.select('#patternDiv').selectAll("*").remove();
+   if(marker!=undefined){map.removeLayer(marker);}
+    $('#alertid').hide("fade");
     spinner.spin(GRAPH.target);
     GRAPH.codSetorList   = [];
     var lats             = [],
         longs            = [],
         points           = [];
-    poly2                = (Object.values(Object.values(e.layers)[0])[1])._latlngs;
+    /*---------------------------------------*/
+    let temp=e.layers.getLayers();
+    /*if(temp.length>2){
+      while(e.layers.getLayers().length>2){
+          e.layers.removeLayer(temp[0]);
+      }
+    }*/
+    /*---------------------------------------*/
+    GRAPH.bufferedPolygon=temp[temp.length-1]._latlngs;
+
+    let poly2  = temp[temp.length-1]._latlngs,
+    bound  = temp[temp.length-1].getBounds(),
+    latlng = bound.getCenter();
+
+     
+
+    //poly2                = (Object.values(Object.values(e.layers)[0])[1])._latlngs;
     poly2.forEach(function(d){
                   points.push({x:parseFloat(d.lat),y:parseFloat(d.lng)});
                   });
@@ -229,35 +272,38 @@ map.on('draw:buffered', (e) => {
     }
     let MaxNumberOfSites=180;
     $.ajax({
-        /*data:{'lats':JSON.stringify(lats),'longs':JSON.stringify(longs)},*/
         url : '/setor_selected/',
-        data:{'lats':JSON.stringify(lats),'longs':JSON.stringify(longs),'MaxNumberSites':MaxNumberOfSites},
-        //url : '/function_setor_Selected/',
+        data:{'lats':JSON.stringify(lats),'longs':JSON.stringify(longs),'MaxNumberSites':MaxNumberOfSites,'centerLat':latlng.lat,'centerLng':latlng.lng},
         type: 'get',
         dataType : 'json',
         success : function(json) {
             spinner.stop();
+
             if(json.message!=undefined){
-                $('#alertid').show().html("<strong>Danger!</strong> You selected <strong>"+json.total+"</strong> sites. You should select less than <strong>"+MaxNumberOfSites+"</strong>.")
-                //document.getElementById("alertid").style.display = "block";
+                //$('#alertid').show().html("<strong>Danger!</strong> You selected <strong>"+json.total+"</strong> sites. You should select less than <strong>"+MaxNumberOfSites+"</strong>.")
+                $('#alertid').show('fade').html("You selected a too larger region. We shorten your search.");
+                SetoresList = JSON.parse(json.json);
             }
-              else{
-                    //document.getElementById("alertid").style.display = "none";
-                    $('#alertid').hide();
-                    SetoresList = JSON.parse(json);
-                    clearAll();
-                    SetoresList['features'].forEach(function(d){  
-                        GRAPH.codSetorList.push(d.properties['codsetor']);
-                        d.properties.numcrimens=0.5; });
-                    drawLeafletMap(SetoresList);
-                    clearMap();
+            else{
+                  $('#alertid').hide('fade');
+                  SetoresList = JSON.parse(json);
+                  clearAll();
             }
+            
+            SetoresList['features'].forEach(function(d){  
+                GRAPH.codSetorList.push(d.properties['codsetor']);
+                d.properties.numcrimens=0.5; });
+            drawLeafletMap(SetoresList);
+            clearMap();
         }
     });
-
+     GRAPH.scaleCenter_Star=undefined;
+     document.getElementById("mainButton").disabled=false;
+     main();
 });
-/*
-var WW=document.getElementById('map');
+
+
+/*var WW=document.getElementById('map');
 var offsetL = document.getElementById('map').offsetLeft+((WW.offsetWidth-60)/2)+40;
 var offsetT =document.getElementById('map').offsetTop+(((WW.offsetWidth-60)/2)/2)+20;*/
 
@@ -337,7 +383,7 @@ function drawLeafletMap(geoShape){
                   .html("<center><b>"+d.properties.codsetor+"</b></center>"+
                         "<hr> <b>Nom_mu:</b> "+d.properties.nom_mu+
                         "<hr> <b>Nom_mu:</b> "+d.properties.nom_di+
-                        "<hr> <b>Num.Crimes:</b> "+f);
+                        "<hr> <b>Num.Crimes:</b> "+ Math.floor(f));
               })
               .on("mouseout",  function(d,i) {
                 tooltip.classed("hidden", true)
@@ -391,27 +437,27 @@ function GeoMouseClick(d){
 
 //get polygon with marker
 function QueryWithMarker(lat,lng){
+    /*--------------- begin limpieza de datos ----------*/
+    d3.select(map.getPanes().overlayPane).selectAll("#mapdiv").remove();
+    deleteElementsOfMap();
+
+    /*--------------- end limpieza de datos ------------*/
     $.ajax({
         data:{'lat':lat,'lng':lng},
         url : '/QueryWith_Marker/',
         type: 'get',
         dataType : 'json',
         success : function(json) {
-
           var myjson      = JSON.parse(json);
-          points          =[];
-          (myjson.features[0].geometry.coordinates[0][0]).forEach(function(d,i){
-                                                                      points.push([d[1],d[0]]);
-                                                                  });                
+          points          = [];
+          (myjson.features[0].geometry.coordinates[0][0]).forEach(function(d,i){points.push([d[1],d[0]]);});                
           var firstpolyline = new L.polyline(points).addTo(map);
           firstpolyline.addTo(drawnItems);
         }
     });
 }
 
-/*
-function HotspotDetection(){
-}*/
+
 
 function deleteElementsOfMap() {
     for(i in map._layers) {
@@ -710,7 +756,8 @@ function DrawIndividualHotspots(states){
     projection.scale(scaleCenter.scale)
               .center(scaleCenter.center)
               .translate([width/2, height/2]);
-              visualize(states);
+
+    visualize(states);
 
     function visualize(states) {
             GRAPH.patternDiv.forEach(function(data, i) {
@@ -770,7 +817,8 @@ function DrawIndividualHotspots(states){
             var yAxis = d3.axisRight()
               .ticks(numTicks)
               .scale(y);   
-            svgCol.append("text")
+
+            /*svgCol.append("text")
             .attr("fill", "gray")          // <=== Set the fill
             .style("font-family","pacific")
             .style("text-anchor", "middle")
@@ -778,7 +826,7 @@ function DrawIndividualHotspots(states){
             .attr("y", 57)
             .attr("x",-60)
             .attr("transform", "rotate(-90)")
-            .text("Number of Crimes");
+            .text("Number of Crimes"); */
 
             svgCol.append("g")
                 .attr("class", "y axis")

@@ -11,7 +11,7 @@ class Setor(models.Model):
     codsetor 		= models.CharField(max_length=15)
     x 				= models.FloatField()
     y 				= models.FloatField()
-    #graph           = models.CharField(max_length=750)
+    graph           = models.CharField(max_length=750)
     nom_mu          = models.CharField(max_length=32)
     nom_di          = models.CharField(max_length=38)
     geom 			= models.MultiPolygonField(srid=4326)

@@ -70,7 +70,7 @@ def Add_Graph():
 	        a_result.append(CodeList[entero].strip().rstrip())
 	    str1 = ",".join(str(x) for x in a_result)
 	    dic[code]=str1
-
+	print("fin preparacion")
 	for code in CodeList:
 		code=code.strip().rstrip()
 		Setor.objects.filter(codsetor=code).update(graph=dic[code])

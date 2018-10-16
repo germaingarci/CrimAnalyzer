@@ -904,8 +904,8 @@ RankingTypeViewSunBarChart.individualDiv=(myDiv_RankingTypeViewSunBarChart.clien
 
 var arc = d3.arc();
 var p   = Math.PI*2;
-var projection2 = d3.geoMercator().scale(1);
-var path = d3.geoPath().projection(projection2);
+var projection_Star = d3.geoMercator().scale(1);
+var path_Star = d3.geoPath().projection(projection_Star);
 
 RankingTypeViewSunBarChart.Radio        =  Math.min(RankingTypeViewSunBarChart.individualDiv/3+20,100);//100;
 RankingTypeViewSunBarChart.innerRadius  = 50;
@@ -926,7 +926,7 @@ function CreateSunBarChartTypeView_Hotspots(misDatos,topnames){
 
      //var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.values.length;});})});
      var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.value;});})});
-     RankingTypeViewSunBarChart.Scale=d3.scaleLinear().domain([0, maximo]).range([RankingTypeViewSunBarChart.innerRadius+1,RankingTypeViewSunBarChart.Radio]);
+     RankingTypeViewSunBarChart.Scale=d3.scaleLinear().domain([0, maximo]).range([RankingTypeViewSunBarChart.innerRadius,RankingTypeViewSunBarChart.Radio]);
 
      var Second_data = d3.nest()
              .key(function(f){return f.typeCrime;})
@@ -935,8 +935,21 @@ function CreateSunBarChartTypeView_Hotspots(misDatos,topnames){
                         .rollup(function(v){return d3.sum(v,function(d){return d.value;});})
                     .entries(misDatos);
 
-     Second_data.sort(function(a,b){return topnames.indexOf(b.key)-topnames.indexOf(a.key);});
+    Second_data.sort(function(a,b){return GRAPH.ListOfCrimeTypesCons.indexOf(a.key)-GRAPH.ListOfCrimeTypesCons.indexOf(b.key);});
+    /*---------------------------------------------*/
+    Second_data.forEach(function(d){ d.values.sort(function(a,b){return parseInt(a.key)-parseInt(b.key)});});
+    Second_data.forEach(function(f){
+        f.values.forEach(function(s){
+          Months.forEach(function(m){
+            let ind = arrayObjectIndexOf(s.values,m,"key");
+            if(ind<0){
+              s.values.push({"key":m,"value":0});
+            }
+          });
+        });
+    });
 
+    /*---------------------------------------------*/
     sumTotal=0;
     Second_data.forEach(function(d){
         d.sumatoria=d3.sum(d.values,function(f){return d3.sum(f.values,function(t){return t.value;})});
@@ -975,24 +988,53 @@ function CreateSunBarChartTypeView(misDatos,topnames){
 
     var maximo=d3.max(data,function(d){ return d3.max(d.values,function(f){return d3.max(f.values,function(g){return g.values.length;});})});
 
-    RankingTypeViewSunBarChart.Scale=d3.scaleLinear().domain([0, maximo]).range([RankingTypeViewSunBarChart.innerRadius+1,RankingTypeViewSunBarChart.Radio]);
+    RankingTypeViewSunBarChart.Scale=d3.scaleLinear().domain([0, maximo]).range([RankingTypeViewSunBarChart.innerRadius,RankingTypeViewSunBarChart.Radio]);
 
     var Second_data = d3.nest()
              .key(function(f){return f.crimeType;})
              .key(function(d){return d.year;})
              .key(function(d){return d.labelMonth;}).entries(misDatos);
-             
-    Second_data.sort(function(a,b){return topnames.indexOf(b.key)-topnames.indexOf(a.key);})
-    
+    /*---------------------------------------------*/ 
+    Second_data.forEach(function(f){
+    GRAPH.TopSelectedYears.forEach(function(y){
+        let ind = arrayObjectIndexOf(f.values,y.toString(),"key");
+        if(ind<0){
+          f.values.push({"key":y.toString(),"values":[]});
+        }
+      });
+    });
+
+    Second_data.sort(function(a,b){return GRAPH.ListOfCrimeTypesCons.indexOf(a.key)-GRAPH.ListOfCrimeTypesCons.indexOf(b.key);})
+
+    Second_data.forEach(function(d){d.values.sort(function(a,b){return parseInt(a.key)-parseInt(b.key)});    });
+    Second_data.forEach(function(f){
+        f.values.forEach(function(s){
+            Months.forEach(function(m){
+                let ind = arrayObjectIndexOf(s.values,m,"key");
+                if(ind<0){
+                  s.values.push({"key":m,"values":[]});
+                }
+          });
+        });
+    });
+    /*---------------------------------------------*/
     sumTotal=0;
     Second_data.forEach(function(d){
         d.sumatoria=d3.sum(d.values,function(f){return d3.sum(f.values,function(t){return t.values.length;})});
         sumTotal+=d.sumatoria;
     });
 
-    projection2.scale(GRAPH.scaleCenter.scale)
-      .center(GRAPH.scaleCenter.center)
+    projection_Star = d3.geoMercator().scale(1);
+    path_Star = d3.geoPath().projection(projection_Star)
+    GRAPH.scaleCenter_Star = calculateScaleCenter_SmallMultiples(SetoresList,2*RankingTypeViewSunBarChart.innerRadius,2*RankingTypeViewSunBarChart.innerRadius);
+
+
+    projection_Star.scale(GRAPH.scaleCenter_Star.scale)
+      .center(GRAPH.scaleCenter_Star.center)
       .translate([RankingTypeViewSunBarChart.innerRadius , RankingTypeViewSunBarChart.innerRadius ]);
+    //path = d3.geoPath().projection(projection2);
+    
+    
 
     visualize(Second_data,SetoresList,temp1,codemax,false,sumTotal);
 }
@@ -1014,10 +1056,15 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
               crimeTypeDivClick(d.key);
           });
 
-      createSunChart(wrapper,d,states,GRAPH.CrimeTypeScale(d.key),temp1,codeCrimeTypeScale,hotspot,sumTotal);
+      /*temp=d.key.split(' ').join('');
+      return "sunBarChart_"+temp.split('.').join('');*/
+      temp=(d.key.toLowerCase()).split(' ').join('');
+      temp=temp.split('.').join('')
+      temp=temp.split('-').join('')
+      createSunChart(wrapper,d,states,GRAPH.CrimeTypeScale(d.key),temp1,codeCrimeTypeScale,hotspot,sumTotal,temp);
   });
 
-  function createSunChart(wrapper,da,states,color,temp1,codeCrimeTypeScale,hotspot,sumTotal){
+  function createSunChart(wrapper,da,states,color,temp1,codeCrimeTypeScale,hotspot,sumTotal,crimeTypeIndex){
           wrapper.append('p')
                  .text(da.key)
                  .style("color",color)
@@ -1055,7 +1102,7 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
                 .attr('stroke',"black")
                 .attr('stroke-width',0.5)
                 .attr('stroke-opacity',1)
-                .attr('d', path);
+                .attr('d', path_Star);
 
             var labels = svg.append("g")
                   .attr("transform", "translate(" + RankingTypeViewSunBarChart.individualDiv/2 + "," + RankingTypeViewSunBarChart.height/2 + ")");
@@ -1068,10 +1115,12 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
           labels.selectAll("text")
             .data(da.values)
           .enter().append("text")
+            .style("text-font", "pacifico")
+            .style("font-size", "11px")
             .style("text-anchor", "middle")
-            .style("font-weight","bold")
             .style("fill", "#3e3e3e")
             .append("textPath")
+            .attr("class",function(d){return "label_"+crimeTypeIndex+"_"+d.key.toString();})
             .attr("xlink:href", "#label-path")
             .attr("startOffset", function(d, i) { 
               return i * 100 / da.values.length + 50 / da.values.length + '%';
@@ -1093,7 +1142,7 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
             var secondStart=i*Math.PI*2/da.values.length+RankingTypeViewSunBarChart.anglePadding;
             var secondEnd=(i+1)*Math.PI*2/da.values.length-RankingTypeViewSunBarChart.anglePadding;
 
-            drawIndividualYears(d.values,color,secondStart,secondEnd,group,hotspot);
+            drawIndividualYears(d.values,color,secondStart,secondEnd,group,hotspot,crimeTypeIndex,d.key);
 
             return arc
                  .innerRadius(RankingTypeViewSunBarChart.innerRadius)
@@ -1106,7 +1155,7 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
 }
 
  function calculateScaleCenter_SmallMultiples(features,iWidth,iHeight) {
-        var bbox_path = path.bounds(features),
+        let bbox_path = path_Star.bounds(features),
           scale = 0.95 / Math.max(
           (bbox_path[1][0] - bbox_path[0][0]) / iWidth,//(2*secondinnerRadius),
           (bbox_path[1][1] - bbox_path[0][1]) /iHeight//(2*secondinnerRadius)
@@ -1114,7 +1163,7 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
 
         // Get the bounding box of the features (in map units!) and use it
         // to calculate the center of the features.
-        var bbox_feature = d3.geoBounds(features),
+        let bbox_feature = d3.geoBounds(features),
           center = [
           (bbox_feature[1][0] + bbox_feature[0][0]) / 2,
           (bbox_feature[1][1] + bbox_feature[0][1]) / 2];
@@ -1126,16 +1175,23 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
   } 
 
 
-  function drawIndividualYears(datus,color,startAngle,endAngle,group,hotspot){
+  function drawIndividualYears(datus,color,startAngle,endAngle,group,hotspot,crimeTypeIndex,yearKey){
         datus.sort(function(a,b){return Months.indexOf(a.key)-Months.indexOf(b.key);})
         p=endAngle-startAngle;
         
+        var  mouseover, mousemove, mouseout;
+
         group.selectAll("paths")
         .data(datus)
         .enter()
         .append("path")
           .attr("fill",color)
-          .attr("opacity",0.3)
+          .attr("class",function(d){
+              let temp= d.key+"_"+crimeTypeIndex.toString()+"_"+yearKey.toString();
+                return temp;
+                
+            })
+          .attr("opacity",0.4)
           .attr("stroke",color)
           .attr("stroke-opacity",1)
           .attr("stroke-width",1.5)
@@ -1150,7 +1206,49 @@ function visualize(data,states,temp1,codemax,hotspot,sumTotal){
                  .startAngle(function(){return startAngle+(GRAPH.ordinalMonthScale(d.key)-1)*p/12})
                  .endAngle(function(){return startAngle+(GRAPH.ordinalMonthScale(d.key))*p/12})(d);
                  
-          });
+          })
+        .on("mouseover", mouseover)
+        .on("mouseout", mouseout);
+
+        function mouseover(d){
+            month = d.key;
+            GRAPH.TopSelectedCrimeTypes.forEach(function(j){
+              GRAPH.TopSelectedYears.forEach(function(g){
+                let typeCrime=(j.toLowerCase()).split(' ').join('');
+                typeCrime=typeCrime.split('.').join('');
+                typeCrime=typeCrime.split('-').join('');
+
+                let temp=d3.select("."+month+"_"+typeCrime+"_"+g.toString());
+                temp.attr("opacity",1);
+
+                crimesNum=0;
+                if(temp.data().length>0){
+                    if(hotspot){
+                       crimesNum=temp.data()[0].value;
+                    }else{
+                        crimesNum=temp.data()[0].values.length;
+                    }
+                  }
+                
+                d3.select(".label_"+typeCrime+"_"+g.toString()).text(function(){return g.toString()+" - "+month+" - "+parseInt(crimesNum).toString();});
+              });
+            });
+        }
+
+        function mouseout(d) {
+            month = d.key;
+            GRAPH.TopSelectedCrimeTypes.forEach(function(j){
+              GRAPH.TopSelectedYears.forEach(function(g){
+                let typeCrime=(j.toLowerCase()).split(' ').join('');
+                typeCrime=typeCrime.split('.').join('');
+                typeCrime=typeCrime.split('-').join('');
+                
+                d3.select("."+month+"_"+typeCrime+"_"+g.toString()).attr("opacity",0.4);
+                d3.select(".label_"+typeCrime+"_"+g.toString()).text(function(){return g.toString();});
+              });
+             });
+        }
+
 }
 
 function getElementWithIndex(array1,indexs){
@@ -1164,9 +1262,8 @@ function MakeAdditionalGraphs(){
    RowBarChart_CrimeType=new rowBarChart("CrimeTypeList","value",GRAPH.dataCrossfilter.SecondCrimeTypes.all(),GRAPH.TopSelectedCrimeTypes);
    
 
-   RowBarChart_Years.DrawGraph();
-
-    RowBarChart_CrimeType.DrawGraph();
+  RowBarChart_Years.DrawGraph();
+  RowBarChart_CrimeType.DrawGraph();
    // RowBarChart_Years.margin.right=20;
    // RowBarChart_Years.margin.left=5;
     
@@ -1395,7 +1492,5 @@ function updateCrimeTypesChart(){
       MakeTemporalCrimeTypeView_Hotspot(GRAPH.P_TypesCrimes[GRAPH.HotspotSeleccionado]);
    }else{
       MakeTemporalCrimeTypeView(TotalData);
-   }
-   
-   
+   }   
 }

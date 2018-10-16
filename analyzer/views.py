@@ -20,7 +20,8 @@ import calendar
 import statsmodels.api as sm
 import numpy as np
 import math
-#import networkx as nx
+from collections import deque
+import networkx as nx
 
 ################################
 
@@ -40,6 +41,10 @@ def QueryWith_Marker(request):
 def setor_selected(request):#function_setor_Selected(request):
     lats                = json.loads(request.GET.get('lats'))
     longs               = json.loads(request.GET.get('longs'))
+
+    centerLat           = float(request.GET.get('centerLat'))
+    centerLng           = float(request.GET.get('centerLng'))
+
     MaxNumberOfNodes    = int(request.GET.get('MaxNumberSites'))
 
     pos                 = GetPolygonWithArrays(lats,longs)
@@ -52,10 +57,53 @@ def setor_selected(request):#function_setor_Selected(request):
         if (poly.contains(pnt)):
             sele.append(float(ili.idE))
 
+    if(len(sele)<MaxNumberOfNodes):
+        return setor_selected_Intermedio(sele)
+    else:
+        setorFiltered = GraphObtimized(sele,centerLat,centerLng,MaxNumberOfNodes)
+        setores = serialize('geojson',Setor.objects.filter(codsetor__in=setorFiltered).only('codsetor','geom','nom_mu','nom_di'))
+        return HttpResponse(json.dumps({'message':'error','total':len(sele),'json':setores}),content_type='application/json')
+    '''
     if(len(sele)>MaxNumberOfNodes):
         return HttpResponse(json.dumps({'message':'error','total':len(sele)}),content_type='application/json')
     else:
         return setor_selected_Intermedio(sele)
+    '''
+
+def GraphObtimized(sele,centerLat,centerLng,numeroDeNodos):
+    filteredCodes=[]
+    G=nx.Graph()
+    filterr = list(Setor.objects.filter(idE__in=sele).only('idE','codsetor','geom','graph'))
+    for node in filterr:
+        G.add_node(node.codsetor)
+        filteredCodes.append(node.codsetor)
+
+    centralCode = ""
+    pnt = Point(centerLng,centerLat)
+    for ili in filterr:
+        #central node
+        if(ili.geom.contains(pnt)):
+            centralCode=ili.codsetor
+        #get coords
+        coords = ili.graph.split(',')
+        for cor in coords:
+            if(cor.strip() in filteredCodes):
+                G.add_edge(ili.codsetor,cor.strip())
+
+    dq  = deque([centralCode])
+    G   = G.to_undirected()
+    dic = nx.bfs_successors(G,centralCode)
+
+    resultado=[centralCode]
+    while(len(resultado)<numeroDeNodos):
+        actualNode=dq.popleft()
+        if(actualNode in dic):
+            temp=dic[actualNode]
+            for i in temp:
+                resultado.append(i)
+                dq.append(i)
+
+    return resultado
 
 def setor_selected_Intermedio(sele):
     #setores = serialize('geojson',Setor.objects.filter(idE__in=sele).only('idE','codsetor','x','y','geom','graph','nom_mu','nom_di'))

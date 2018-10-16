@@ -50,11 +50,11 @@
     bottom: 0;
     left: 0;
     font-weight: bold;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 #sunBarChart p.legendPercent {
-	font-family: Pacifico;
+	  font-family: Pacifico;
     width: 100%;
     text-align: center;
     position: absolute;
@@ -159,3 +159,21 @@ div.tooltipother::after {
     margin-left: -10px;
 
 }*/
+
+/*-------------------------------------- leaf letMap ---------------------------------*/
+.layers-control-img {
+    max-width: 40px;
+    overflow: hidden;
+    max-height: 40px;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.myfile {
+    font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}

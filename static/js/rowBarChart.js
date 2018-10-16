@@ -12,8 +12,7 @@ function rowBarChart(divName,values,data,topNames){
 	let elementoDiv = document.getElementById(divName);
 	HorizontalBarChart.height = elementoDiv.clientHeight;
 	HorizontalBarChart.width  = elementoDiv.clientWidth;
-	console.log(elementoDiv.clientWidth);
-	console.log(divName);
+
 
 	HorizontalBarChart.xScale = d3.scaleLinear();//.range([0, elementoDiv.clientWidth]);
 	HorizontalBarChart.yScale = d3.scaleBand().padding(0.25);

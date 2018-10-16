@@ -54,7 +54,7 @@ def Main_NMF(NumberOfHotspots,ListOfSites,ListOfCrimeTypes,ListOfDates,DataMin,D
 		date_ListOfDates.append(datetime.strptime(str(ListOfDates[i]),formato_fecha2))
 
 	for i in range(len(ListOfCrimeTypes)):
-		temp=ListOfCrimeTypes[i].lower()
+		temp=ListOfCrimeTypes[i]#.lower()
 		ListOfCrimeTypes[i]=' '.join(temp.split())
 
 	listOfCrimes=[]
@@ -82,13 +82,13 @@ def Main_NMF(NumberOfHotspots,ListOfSites,ListOfCrimeTypes,ListOfDates,DataMin,D
 	numberOfCrimes=0
 	for row in listOfCrimes:
 		ActualData=datetime.strptime(str(row.data),formato_fecha)
-		crimeInterm=' '.join(row.tipoCrime.lower().split())
-		if(isInRange(DataMin,DataMax,ActualData) and (crimeInterm==crimetype.lower() or crimetype=="")):
+		crimeInterm=' '.join(row.tipoCrime.split())
+		if(isInRange(DataMin,DataMax,ActualData) and (crimeInterm==crimetype or crimetype=="")):
 			numberOfCrimes+=1
 			#indexTimeSlice=row['scalarValue']
 			indexTimeSlice=GetDateIndex(date_ListOfDates,ActualData)
 
-			temp=row.tipoCrime.lower()
+			temp=row.tipoCrime
 			temp=' '.join(temp.split())
 			indexCrimeType=ListOfCrimeTypes.index(temp)
 
